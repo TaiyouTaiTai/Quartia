@@ -1,38 +1,41 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import pool from '../config/db.js';
-import { auth } from '../middlewares/auth.js';
+import { auth, firmarToken } from '../middlewares/auth.js';
+import { validar } from '../middlewares/validate.js';
+import { limiteIntentos } from '../middlewares/limiteIntentos.js';
 
 const router = Router();
 
+const correo = z.string().trim().toLowerCase().email().max(190);
+
 const registroSchema = z.object({
-  correo: z.string().email(),
-  nombre: z.string().min(2).max(120),
-  clave: z.string().min(6).max(100)
+  correo,
+  nombre: z.string().trim().min(2).max(120),
+  clave: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres').max(72) // bcrypt solo usa 72 bytes
 });
 
 const loginSchema = z.object({
-  correo: z.string().email(),
-  clave: z.string().min(1)
+  correo,
+  clave: z.string().min(1).max(72)
 });
 
+// Hash de relleno: si el correo no existe igual se compara contra algo, para que
+// la respuesta tarde lo mismo y no se pueda adivinar qué correos están registrados.
+const HASH_FALSO = bcrypt.hashSync('relleno-para-igualar-tiempos', 10);
+
 // POST /api/auth/registro
-router.post('/registro', async (req, res, next) => {
+router.post('/registro', limiteIntentos({ max: 10 }), validar(registroSchema), async (req, res, next) => {
   try {
-    const datos = registroSchema.parse(req.body);
-    const hash = await bcrypt.hash(datos.clave, 10);
+    const { correo, nombre, clave } = req.body;
+    const hash = await bcrypt.hash(clave, 10);
     const [result] = await pool.execute(
       'INSERT INTO usuario (correo, nombre, hash_clave) VALUES (?, ?, ?)',
-      [datos.correo, datos.nombre, hash]
+      [correo, nombre, hash]
     );
-    const token = jwt.sign(
-      { id: result.insertId, correo: datos.correo },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES }
-    );
-    res.status(201).json({ token, usuario: { id: result.insertId, correo: datos.correo, nombre: datos.nombre } });
+    const usuario = { id: result.insertId, correo, nombre };
+    res.status(201).json({ token: firmarToken(usuario), usuario });
   } catch (err) {
     if (err.code === 'ER_DUP_ENTRY') {
       return res.status(409).json({ error: 'Ese correo ya está registrado' });
@@ -42,27 +45,22 @@ router.post('/registro', async (req, res, next) => {
 });
 
 // POST /api/auth/login
-router.post('/login', async (req, res, next) => {
+router.post('/login', limiteIntentos({ max: 10 }), validar(loginSchema), async (req, res, next) => {
   try {
-    const datos = loginSchema.parse(req.body);
+    const { correo, clave } = req.body;
     const [rows] = await pool.execute(
       'SELECT id, correo, nombre, hash_clave FROM usuario WHERE correo = ?',
-      [datos.correo]
+      [correo]
     );
-    if (rows.length === 0) {
-      return res.status(401).json({ error: 'Credenciales inválidas' });
-    }
     const usuario = rows[0];
-    const valido = await bcrypt.compare(datos.clave, usuario.hash_clave);
-    if (!valido) {
+    const valido = await bcrypt.compare(clave, usuario?.hash_clave ?? HASH_FALSO);
+    if (!usuario || !valido) {
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }
-    const token = jwt.sign(
-      { id: usuario.id, correo: usuario.correo },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES }
-    );
-    res.json({ token, usuario: { id: usuario.id, correo: usuario.correo, nombre: usuario.nombre } });
+    res.json({
+      token: firmarToken(usuario),
+      usuario: { id: usuario.id, correo: usuario.correo, nombre: usuario.nombre }
+    });
   } catch (err) {
     next(err);
   }

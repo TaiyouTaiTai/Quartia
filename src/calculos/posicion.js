@@ -1,118 +1,117 @@
-import { redondear, ordenar } from './helpers.js';
-import { mediana } from './tendenciaCentral.js';
+import { redondear as r, limpio, ordenar, listar, numerar, requerirDatos } from './helpers.js';
 
-
-
-// ---- CUARTILES (método de posición) ----
-export function cuartil(datos, q) {
-  // q ∈ {1, 2, 3}
-  const ordenados = ordenar(datos);
+// Valor en la posición k(n+1)/partes de los datos ordenados (método de la mayoría de
+// libros de texto en español). Si la posición cae entre dos datos se interpola;
+// si cae antes del primero o después del último, se usa el extremo.
+// Se recibe k y partes por separado (k(n+1)/partes) para que la posición sea exacta:
+// 0.3 * 10 da 3.0000000000000004 en punto flotante, pero 3 * 10 / 10 da 3.
+export function cuantil(ordenados, k, partes) {
   const n = ordenados.length;
-  const pos = (q * (n + 1)) / 4;
-  const posInf = Math.floor(pos);
-  const posSup = Math.ceil(pos);
-  let valor;
-  if (posInf === posSup) {
-    valor = redondear(ordenados[posInf - 1]);
-  } else {
-    const fraccion = pos - posInf;
-    const a = ordenados[posInf - 1];
-    const b = ordenados[posSup - 1];
-    valor = redondear(a + fraccion * (b - a));
+  const posicion = (k * (n + 1)) / partes;
+  if (posicion < 1) return { posicion, valor: ordenados[0], ajuste: 'inicio' };
+  if (posicion > n) return { posicion, valor: ordenados[n - 1], ajuste: 'fin' };
+  const inf = Math.floor(posicion);
+  const fraccion = posicion - inf;
+  const a = ordenados[inf - 1];
+  if (fraccion === 0) return { posicion, valor: a, ajuste: null };
+  const b = ordenados[inf];
+  return { posicion, valor: a + fraccion * (b - a), inf, fraccion, a, b, ajuste: 'interpolado' };
+}
+
+function pasoUbicacion(q, d) {
+  if (q.ajuste === 'inicio') {
+    return { texto: 'La posición queda antes del primer dato, así que se toma el primero', resultado: r(q.valor, d) };
+  }
+  if (q.ajuste === 'fin') {
+    return { texto: 'La posición queda después del último dato, así que se toma el último', resultado: r(q.valor, d) };
+  }
+  if (q.ajuste === null) {
+    return { texto: `La posición es exacta: toma el dato número ${q.posicion}`, resultado: r(q.valor, d) };
   }
   return {
-    estadistico: `cuartil_${q}`,
-    valor,
-    formula_latex: `Q_${q} = x_{\\frac{${q}(n+1)}{4}}`,
-    formula_texto: `Cuartil ${q} = dato en posición ${q}(n+1)/4`,
-    datos_usados: datos,
-    pasos: [
-      `1. Ordenar datos: [${ordenados.join(', ')}]`,
-      `2. Posición = ${q}(n+1)/4 = ${q}(${n}+1)/4 = ${redondear(pos, 2)}`,
-      `3. Q${q} = ${valor}`
-    ],
-    simbolos: [{ simbolo_latex: `Q_${q}`, significado: `Cuartil ${q}` }]
+    texto: `La posición cae entre el dato ${q.inf} (${q.a}) y el dato ${q.inf + 1} (${q.b}): avanza ${r(q.fraccion, 4)} de la distancia entre ellos`,
+    expresion: `${q.a} + ${r(q.fraccion, 4)} × (${q.b} - ${q.a})`,
+    resultado: r(q.valor, d)
   };
 }
 
-// ---- PERCENTIL ----
-export function percentil(datos, p) {
-  const ordenados = ordenar(datos);
-  const n = ordenados.length;
-  const pos = (p * (n + 1)) / 100;
-  const posInf = Math.floor(pos);
-  const posSup = Math.ceil(pos);
-  let valor;
-  if (posInf === posSup) {
-    valor = redondear(ordenados[posInf - 1]);
-  } else {
-    const fraccion = pos - posInf;
-    valor = redondear(ordenados[posInf - 1] + fraccion * (ordenados[posSup - 1] - ordenados[posInf - 1]));
-  }
+// Cuartiles (4 partes), deciles (10) y percentiles (100) son la misma idea.
+function medidaPosicion({ valores, decimales: d }, k, partes, simbolo, nombre) {
+  requerirDatos(valores, 2, `el ${nombre}`);
+  const x = ordenar(valores);
+  const n = x.length;
+  const q = cuantil(x, k, partes);
   return {
-    estadistico: `percentil_${p}`,
-    valor,
-    formula_latex: `P_${p} = x_{\\frac{${p}(n+1)}{100}}`,
-    formula_texto: `Percentil ${p} = dato en posición ${p}(n+1)/100`,
-    datos_usados: datos,
-    pasos: [
-      `1. Ordenar datos: [${ordenados.join(', ')}]`,
-      `2. Posición = ${p}(n+1)/100 = ${p}(${n}+1)/100 = ${redondear(pos, 2)}`,
-      `3. P${p} = ${valor}`
-    ],
-    simbolos: [{ simbolo_latex: `P_${p}`, significado: `Percentil ${p}` }]
+    valor_num: limpio(q.valor),
+    sustitucion: {
+      formula_latex: `${simbolo}_{${k}} = x_{\\frac{${k}(n+1)}{${partes}}}`,
+      variables: { k, n, posicion: r(q.posicion, 4) },
+      resultado: r(q.valor, d)
+    },
+    pasos: numerar([
+      { texto: 'Ordena los datos de menor a mayor', expresion: listar(x) },
+      { texto: `Calcula en qué posición está el ${nombre} ${k}`, expresion: `${k} × (${n} + 1) / ${partes}`, resultado: r(q.posicion, 4) },
+      pasoUbicacion(q, d)
+    ])
   };
 }
 
-// ---- DECIL ----
-export function decil(datos, d) {
-  const ordenados = ordenar(datos);
-  const n = ordenados.length;
-  const pos = (d * (n + 1)) / 10;
-  const posInf = Math.floor(pos);
-  const posSup = Math.ceil(pos);
-  let valor;
-  if (posInf === posSup) {
-    valor = redondear(ordenados[posInf - 1]);
-  } else {
-    const fraccion = pos - posInf;
-    valor = redondear(ordenados[posInf - 1] + fraccion * (ordenados[posSup - 1] - ordenados[posInf - 1]));
-  }
+export const cuartil = (m, { parametro }) => medidaPosicion(m, parametro, 4, 'Q', 'cuartil');
+export const decil = (m, { parametro }) => medidaPosicion(m, parametro, 10, 'D', 'decil');
+export const percentil = (m, { parametro }) => medidaPosicion(m, parametro, 100, 'P', 'percentil');
+
+// ---- RESUMEN DE CINCO NÚMEROS / DIAGRAMA DE CAJA ----
+export function calcularCaja(valores) {
+  const x = ordenar(valores);
+  const n = x.length;
+  const q1 = cuantil(x, 1, 4).valor;
+  const med = cuantil(x, 2, 4).valor;
+  const q3 = cuantil(x, 3, 4).valor;
+  const riq = q3 - q1;
+  const cercaInf = q1 - 1.5 * riq;
+  const cercaSup = q3 + 1.5 * riq;
+  // Los bigotes llegan hasta el dato real más extremo que sigue dentro de las cercas
+  const dentro = x.filter(v => v >= cercaInf && v <= cercaSup);
   return {
-    estadistico: `decil_${d}`,
-    valor,
-    formula_latex: `D_${d} = x_{\\frac{${d}(n+1)}{10}}`
+    min: x[0],
+    q1: limpio(q1),
+    mediana: limpio(med),
+    q3: limpio(q3),
+    max: x[n - 1],
+    riq: limpio(riq),
+    cerca_inf: limpio(cercaInf),
+    cerca_sup: limpio(cercaSup),
+    bigote_inf: dentro[0],
+    bigote_sup: dentro[dentro.length - 1],
+    atipicos: x.filter(v => v < cercaInf || v > cercaSup)
   };
 }
 
-// ---- RESUMEN DE CAJA (boxplot) ----
-export function resumenCaja(datos) {
-  const ordenados = ordenar(datos);
-  const n = ordenados.length;
-  const minimo = ordenados[0];
-  const maximo = ordenados[n - 1];
-  const med = mediana(datos).valor;
-  const q1 = cuartil(datos, 1).valor;
-  const q3 = cuartil(datos, 3).valor;
-  const rangoIntercuartil = q3 - q1;
-  const bigoteInf = Math.max(minimo, q1 - 1.5 * rangoIntercuartil);
-  const bigoteSup = Math.min(maximo, q3 + 1.5 * rangoIntercuartil);
+export function resumenCaja({ valores, decimales: d }) {
+  requerirDatos(valores, 4, 'el diagrama de caja');
+  const c = calcularCaja(valores);
   return {
-    minimo,
-    q1,
-    mediana: med,
-    q3,
-    maximo,
-    rangoIntercuartil,
-    bigoteInf,
-    bigoteSup,
-    datos_usados: datos,
-    pasos: [
-      `1. Ordenar datos: [${ordenados.join(', ')}]`,
-      `2. Q1 = ${q1}, Mediana = ${med}, Q3 = ${q3}`,
-      `3. Rango intercuartil (IQR) = Q3 - Q1 = ${q3} - ${q1} = ${rangoIntercuartil}`,
-      `4. Bigote inferior = m├íx(m├¡n, Q1 - 1.5*IQR) = ${bigoteInf}`,
-      `5. Bigote superior = m├¡n(m├íx, Q3 + 1.5*IQR) = ${bigoteSup}`
-    ]
+    valor_json: c,
+    sustitucion: {
+      formula_latex: 'RIQ = Q_3 - Q_1, \\quad \\text{atípico si } x < Q_1 - 1.5 \\cdot RIQ \\text{ o } x > Q_3 + 1.5 \\cdot RIQ',
+      variables: { Q_1: r(c.q1, d), Q_3: r(c.q3, d), RIQ: r(c.riq, d) },
+      resultado: c
+    },
+    pasos: numerar([
+      { texto: 'Ordena los datos y ubica el mínimo y el máximo', expresion: `mín = ${c.min}, máx = ${c.max}` },
+      { texto: 'Calcula los cuartiles Q1, mediana (Q2) y Q3', expresion: `Q1 = ${r(c.q1, d)}, Q2 = ${r(c.mediana, d)}, Q3 = ${r(c.q3, d)}` },
+      { texto: 'Calcula el rango intercuartílico (la "caja")', expresion: `${r(c.q3, d)} - ${r(c.q1, d)}`, resultado: r(c.riq, d) },
+      {
+        texto: 'Calcula las cercas: todo dato fuera de ellas es atípico',
+        expresion: `${r(c.q1, d)} - 1.5 × ${r(c.riq, d)} = ${r(c.cerca_inf, d)}  y  ${r(c.q3, d)} + 1.5 × ${r(c.riq, d)} = ${r(c.cerca_sup, d)}`
+      },
+      {
+        texto: c.atipicos.length
+          ? `Hay ${c.atipicos.length} valor(es) atípico(s); los bigotes llegan hasta el último dato dentro de las cercas`
+          : 'No hay valores atípicos; los bigotes llegan hasta el mínimo y el máximo',
+        expresion: c.atipicos.length ? listar(c.atipicos) : undefined,
+        resultado: `bigotes: ${c.bigote_inf} a ${c.bigote_sup}`
+      }
+    ])
   };
 }

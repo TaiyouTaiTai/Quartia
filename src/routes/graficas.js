@@ -1,95 +1,68 @@
 import { Router } from 'express';
-import pool from '../config/db.js';
+import { z } from 'zod';
+import { enTransaccion } from '../config/db.js';
 import { auth } from '../middlewares/auth.js';
-import { generarClases } from '../calculos/agrupados.js';
-import { resumenCaja } from '../calculos/posicion.js';
-import { puntosHistograma, puntosPoligono, puntosOjiva } from '../graficas/histograma.js';
-import { puntosCaja } from '../graficas/caja.js';
-import { puntosBarras } from '../graficas/barras.js';
+import { validar } from '../middlewares/validate.js';
+import { solicitudInvalida } from '../lib/errores.js';
+import { obtenerDataset, buscarColumna, extraerMuestra, extraerPares } from '../services/dataset.service.js';
+import { prepararAnalisis, guardarGrafica } from '../services/analisis.service.js';
+import { GRAFICAS } from '../graficas/index.js';
+import { id, metodoClases } from './esquemas.js';
 
 const router = Router();
 
-// POST /api/graficas/:tipo
-router.post('/:tipo', auth, async (req, res, next) => {
+const graficaSchema = z.object({
+  dataset_id: id,
+  tipo: z.enum(Object.keys(GRAFICAS)),
+  columna_id: id,
+  columna_b_id: id.optional(), // solo para dispersión (eje Y)
+  analisis_id: id.optional(),
+  nombre: z.string().trim().max(150).optional(),
+  metodo_clases: metodoClases
+});
+
+function exigirTipo(columna, requiere, tipo) {
+  if (requiere === 'numerico' && columna.tipo_dato !== 'numerico') {
+    throw solicitudInvalida(`La gráfica de ${tipo} necesita una columna numérica y "${columna.nombre}" es de tipo ${columna.tipo_dato}.`);
+  }
+}
+
+// POST /api/graficas — genera los datos de la gráfica (listos para Recharts/Chart.js)
+// y los guarda en grafica.config_json dentro de un análisis.
+router.post('/', auth, validar(graficaSchema), async (req, res, next) => {
   try {
-    const { tipo } = req.params;
-    const { dataset_id, columna_id, columna_b_id } = req.body;
+    const { dataset_id, tipo, columna_id, columna_b_id, analisis_id, nombre, metodo_clases } = req.body;
+    const usuarioId = req.usuario.id;
+    const def = GRAFICAS[tipo];
 
-    // Verificar propiedad
-    const [ds] = await pool.execute(
-      `SELECT d.id FROM dataset d JOIN archivo a ON d.archivo_id = a.id WHERE d.id = ? AND a.usuario_id = ?`,
-      [dataset_id, req.usuario.id]
-    );
-    if (ds.length === 0) return res.status(404).json({ error: 'Dataset no encontrado' });
+    const dataset = await obtenerDataset(usuarioId, dataset_id);
+    const columna = buscarColumna(dataset, columna_id);
+    exigirTipo(columna, def.requiere, tipo);
 
-    const [cols] = await pool.execute(
-      'SELECT id, nombre, tipo_dato FROM dataset_columna WHERE id = ? AND dataset_id = ?',
-      [columna_id, dataset_id]
-    );
-    if (cols.length === 0) return res.status(404).json({ error: 'Columna no encontrada' });
-    const columna = cols[0];
-
-    // Obtener valores
-    const [valores] = await pool.execute(
-      'SELECT valor_num, valor_txt FROM dataset_valor WHERE columna_id = ? AND es_nulo = FALSE ORDER BY fila_idx',
-      [columna_id]
-    );
-
-    let resultado;
-
-    switch (tipo) {
-      case 'histograma':
-      case 'poligono':
-      case 'ojiva': {
-        if (columna.tipo_dato !== 'numerico') {
-          return res.status(400).json({ error: 'Estas gráficas requieren columna numérica' });
-        }
-        const datos = valores.map(v => v.valor_num).filter(v => v !== null);
-        const distribucion = generarClases(datos);
-        resultado = tipo === 'histograma'
-          ? puntosHistograma(distribucion)
-          : tipo === 'poligono'
-            ? puntosPoligono(distribucion)
-            : puntosOjiva(distribucion);
-        break;
-      }
-      case 'caja': {
-        if (columna.tipo_dato !== 'numerico') {
-          return res.status(400).json({ error: 'La gráfica de caja requiere columna numérica' });
-        }
-        const datos = valores.map(v => v.valor_num).filter(v => v !== null);
-        const resumen = resumenCaja(datos);
-        resultado = puntosCaja(resumen);
-        break;
-      }
-      case 'barras': {
-        const datos = valores.map(v => v.valor_txt || v.valor_num).filter(v => v !== null);
-        resultado = puntosBarras(datos);
-        break;
-      }
-      case 'dispersion': {
-        if (!columna_b_id) return res.status(400).json({ error: 'Se necesita columna_b_id para dispersión' });
-        const [colsB] = await pool.execute(
-          'SELECT id, nombre FROM dataset_columna WHERE id = ? AND dataset_id = ?',
-          [columna_b_id, dataset_id]
-        );
-        if (colsB.length === 0) return res.status(404).json({ error: 'Columna B no encontrada' });
-        const [valoresB] = await pool.execute(
-          'SELECT fila_idx, valor_num FROM dataset_valor WHERE columna_id = ? AND valor_num IS NOT NULL',
-          [columna_b_id]
-        );
-        const mapaB = new Map(valoresB.map(v => [v.fila_idx, v.valor_num]));
-        const puntos = valores
-          .map(v => ({ x: v.valor_num, y: mapaB.get(v.fila_idx) }))
-          .filter(p => p.x !== null && p.y !== null);
-        resultado = { tipo: 'dispersion', datos: puntos, config: { x_axis: columna.nombre, y_axis: colsB[0].nombre } };
-        break;
-      }
-      default:
-        return res.status(400).json({ error: 'Tipo de gráfica no soportado' });
+    const opciones = { metodo_clases };
+    if (def.dosColumnas) {
+      if (!columna_b_id) throw solicitudInvalida('La dispersión necesita una segunda columna (columna_b_id)');
+      const columnaB = buscarColumna(dataset, columna_b_id);
+      exigirTipo(columnaB, def.requiere, tipo);
+      Object.assign(opciones, {
+        pares: extraerPares(dataset, columna, columnaB), columnaX: columna.nombre, columnaY: columnaB.nombre
+      });
     }
 
-    res.json(resultado);
+    const config = def.generar(extraerMuestra(dataset, columna), opciones);
+
+    const r = await enTransaccion(async (conn) => {
+      const aId = await prepararAnalisis(conn, { usuarioId, datasetId: dataset_id, analisisId: analisis_id, nombre });
+      const gId = await guardarGrafica(conn, aId, {
+        tipo, columna_id, columna_b_id: def.dosColumnas ? columna_b_id : null, config
+      });
+      return { analisis_id: aId, id: gId };
+    });
+
+    res.status(201).json({
+      analisis_id: r.analisis_id,
+      grafica: { id: r.id, tipo, columna_id, columna_b_id: def.dosColumnas ? columna_b_id : null, config }
+    });
   } catch (err) {
     next(err);
   }

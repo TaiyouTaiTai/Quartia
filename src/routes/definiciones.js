@@ -1,31 +1,40 @@
 import { Router } from 'express';
-import pool from '../config/db.js';
+import { obtenerCatalogo } from '../services/catalogo.service.js';
+import { noEncontrado } from '../lib/errores.js';
 
+// Catálogo didáctico (público: no necesita sesión).
+// El frontend lo carga una vez y lo usa para el hover junto con cada resultado.
 const router = Router();
 
-// GET /api/definiciones — catálogo didáctico de conceptos
-router.get('/', async (req, res) => {
+const publica = ({ id, ...def }) => def;
+
+// GET /api/definiciones — todas, con símbolos y escalas permitidas
+router.get('/definiciones', async (req, res, next) => {
   try {
-    const [rows] = await pool.execute(
-      'SELECT id, nombre, descripcion, formula_latex, ejemplo FROM definicion_estadistico ORDER BY nombre'
-    );
-    res.json(rows);
+    const { definiciones } = await obtenerCatalogo();
+    res.json(definiciones.map(publica));
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 
-// GET /api/definiciones/:id
-router.get('/:id', async (req, res) => {
+// GET /api/definiciones/:clave — ej. /api/definiciones/media
+router.get('/definiciones/:clave', async (req, res, next) => {
   try {
-    const [rows] = await pool.execute(
-      'SELECT * FROM definicion_estadistico WHERE id = ?',
-      [req.params.id]
-    );
-    if (rows.length === 0) return res.status(404).json({ error: 'Definición no encontrada' });
-    res.json(rows[0]);
+    const def = (await obtenerCatalogo()).porClave.get(req.params.clave);
+    if (!def) throw noEncontrado('Definición');
+    res.json(publica(def));
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
+  }
+});
+
+// GET /api/glosario
+router.get('/glosario', async (req, res, next) => {
+  try {
+    res.json((await obtenerCatalogo()).glosario);
+  } catch (err) {
+    next(err);
   }
 });
 

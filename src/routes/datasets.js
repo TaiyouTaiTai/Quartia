@@ -1,95 +1,136 @@
 import { Router } from 'express';
 import multer from 'multer';
-import crypto from 'crypto';
-import fs from 'fs';
-import pool from '../config/db.js';
+import path from 'path';
+import { z } from 'zod';
+import { env } from '../config/env.js';
 import { auth } from '../middlewares/auth.js';
-import { parsearExcel, parsearJSON, guardarDataset } from '../services/ingest.service.js';
+import { validar } from '../middlewares/validate.js';
+import { solicitudInvalida } from '../lib/errores.js';
+import { leerExcel, leerCsv } from '../services/lectura.js';
+import {
+  crearDataset, reemplazarDatos, listarDatasets, obtenerDataset,
+  eliminarDataset, actualizarColumna
+} from '../services/dataset.service.js';
+import { listarAnalisis } from '../services/analisis.service.js';
+import { obtenerCatalogo } from '../services/catalogo.service.js';
+import { estadisticosPermitidos } from '../services/permisos.js';
+import { graficasPermitidas } from '../graficas/index.js';
+import { id, idParam, tablaSchema } from './esquemas.js';
 
 const router = Router();
-const upload = multer({ dest: 'uploads/', limits: { fileSize: 10 * 1024 * 1024 } });
+router.use(auth);
 
-// POST /api/datasets/excel — subir archivo Excel
-router.post('/excel', auth, upload.single('archivo'), async (req, res, next) => {
-  try {
-    if (!req.file) return res.status(400).json({ error: 'No se recibió archivo' });
-    const { nombreHoja, encabezados, filas, sha256, tamanoBytes } = await parsearExcel(req.file.path, req.usuario.id);
-
-    // Registrar archivo
-    const [archivoResult] = await pool.execute(
-      'INSERT INTO archivo (usuario_id, nombre_orig, ruta_storage, mime, tamano_bytes, sha256, estado) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [req.usuario.id, req.file.originalname, req.file.path, req.file.mimetype, tamanoBytes, sha256, 'listo']
-    );
-
-    const datasetId = await guardarDataset(req.usuario.id, archivoResult.insertId, { nombreHoja, encabezados, filas });
-
-    // Limpiar archivo temporal
-    fs.unlink(req.file.path, () => {});
-
-    res.status(201).json({ dataset_id: datasetId, n_filas: filas.length, n_columnas: encabezados.length });
-  } catch (err) {
-    if (req.file) fs.unlink(req.file.path, () => {});
-    next(err);
+// El archivo se queda en memoria: no hay archivos temporales que limpiar
+const LECTORES = { '.xlsx': { leer: leerExcel, origen: 'excel' }, '.csv': { leer: leerCsv, origen: 'csv' } };
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: env.MAX_FILE_MB * 1024 * 1024, files: 1 },
+  fileFilter: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (LECTORES[ext]) return cb(null, true);
+    cb(solicitudInvalida('Solo se aceptan archivos .xlsx o .csv'));
   }
 });
 
-// POST /api/datasets/pegado — datos pegados en JSON
-router.post('/pegado', auth, async (req, res, next) => {
+// POST /api/datasets/archivo — subir Excel o CSV (campo "archivo", opcional "titulo")
+router.post('/archivo', upload.single('archivo'), async (req, res, next) => {
   try {
-    const { datos } = req.body;
-    const { nombreHoja, encabezados, filas } = parsearJSON(datos);
-
-    const [archivoResult] = await pool.execute(
-      "INSERT INTO archivo (usuario_id, nombre_orig, ruta_storage, mime, estado) VALUES (?, ?, ?, 'application/json', 'listo')",
-      [req.usuario.id, 'datos_pegados', 'memoria', ]
-    );
-
-    const datasetId = await guardarDataset(req.usuario.id, archivoResult.insertId, { nombreHoja, encabezados, filas });
-    res.status(201).json({ dataset_id: datasetId, n_filas: filas.length, n_columnas: encabezados.length });
+    if (!req.file) throw solicitudInvalida('No se recibió ningún archivo (campo "archivo")');
+    const ext = path.extname(req.file.originalname).toLowerCase();
+    const { leer, origen } = LECTORES[ext];
+    const tabla = await leer(req.file.buffer);
+    const titulo = req.body.titulo?.trim() || path.basename(req.file.originalname, ext);
+    const creado = await crearDataset(req.usuario.id, { titulo, origen, ...tabla });
+    res.status(201).json(creado);
   } catch (err) {
     next(err);
   }
 });
 
-// GET /api/datasets — listar datasets del usuario
-router.get('/', auth, async (req, res, next) => {
+// POST /api/datasets — tabla creada o pegada en la app: { titulo, columnas, filas }
+router.post('/', validar(tablaSchema), async (req, res, next) => {
   try {
-    const [rows] = await pool.execute(
-      `SELECT d.id, d.titulo, d.n_filas, d.n_columnas, d.creado_en
-       FROM dataset d
-       JOIN archivo a ON d.archivo_id = a.id
-       WHERE a.usuario_id = ? ORDER BY d.creado_en DESC`,
-      [req.usuario.id]
-    );
-    res.json(rows);
+    const { titulo = 'Tabla sin título', columnas, filas } = req.body;
+    const creado = await crearDataset(req.usuario.id, { titulo, origen: 'manual', columnas, filas });
+    res.status(201).json(creado);
   } catch (err) {
     next(err);
   }
 });
 
-// GET /api/datasets/:id — obtener dataset completo con columnas y valores
-router.get('/:id', auth, async (req, res, next) => {
+// GET /api/datasets — listar (sin los datos, solo el resumen)
+router.get('/', async (req, res, next) => {
   try {
-    const [cols] = await pool.execute(
-      `SELECT dc.id, dc.posicion, dc.nombre, dc.tipo_dato, dc.escala, dc.naturaleza, dc.n_validos, dc.n_nulos
-       FROM dataset_columna dc
-       JOIN dataset d ON dc.dataset_id = d.id
-       JOIN archivo a ON d.archivo_id = a.id
-       WHERE d.id = ? AND a.usuario_id = ? ORDER BY dc.posicion`,
-      [req.params.id, req.usuario.id]
-    );
-    if (cols.length === 0) return res.status(404).json({ error: 'Dataset no encontrado' });
+    res.json(await listarDatasets(req.usuario.id));
+  } catch (err) {
+    next(err);
+  }
+});
 
-    // Obtener valores por columna
-    const columnasCompletas = [];
-    for (const col of cols) {
-      const [valores] = await pool.execute(
-        'SELECT fila_idx, valor_num, valor_txt, valor_fecha, es_nulo FROM dataset_valor WHERE columna_id = ? ORDER BY fila_idx',
-        [col.id]
-      );
-      columnasCompletas.push({ ...col, valores });
+// GET /api/datasets/:id — datos + columnas, indicando qué cálculos y gráficas
+// tienen sentido en cada columna (paso 2 del flujo en plan-db-mvp.md)
+router.get('/:id', validar(idParam, 'params'), async (req, res, next) => {
+  try {
+    const dataset = await obtenerDataset(req.usuario.id, req.params.id);
+    const catalogo = await obtenerCatalogo();
+    dataset.columnas = dataset.columnas.map(c => ({
+      ...c,
+      estadisticos_permitidos: estadisticosPermitidos(catalogo, c),
+      graficas_permitidas: graficasPermitidas(c)
+    }));
+    res.json(dataset);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PUT /api/datasets/:id — reemplazar los datos (borra los análisis anteriores)
+router.put('/:id', validar(idParam, 'params'), validar(tablaSchema), async (req, res, next) => {
+  try {
+    res.json(await reemplazarDatos(req.usuario.id, req.params.id, req.body));
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE /api/datasets/:id
+router.delete('/:id', validar(idParam, 'params'), async (req, res, next) => {
+  try {
+    await eliminarDataset(req.usuario.id, req.params.id);
+    res.status(204).end();
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PATCH /api/datasets/:id/columnas/:columnaId — corregir lo detectado automáticamente.
+// Ej.: una columna "satisfacción (1-5)" se detecta como razón, pero es ordinal.
+// Solo estos campos se pueden cambiar (la lista blanca la impone zod con .strict()).
+const columnaSchema = z.object({
+  nombre: z.string().trim().min(1).max(150),
+  escala: z.enum(['nominal', 'ordinal', 'intervalo', 'razon']),
+  unidad: z.string().trim().max(40).nullable(),
+  decimales: z.number().int().min(0).max(10)
+}).partial().strict();
+
+router.patch(
+  '/:id/columnas/:columnaId',
+  validar(z.object({ id, columnaId: id }), 'params'),
+  validar(columnaSchema),
+  async (req, res, next) => {
+    try {
+      res.json(await actualizarColumna(req.usuario.id, req.params.id, req.params.columnaId, req.body));
+    } catch (err) {
+      next(err);
     }
-    res.json(columnasCompletas);
+  }
+);
+
+// GET /api/datasets/:id/analisis — historial de análisis del dataset
+router.get('/:id/analisis', validar(idParam, 'params'), async (req, res, next) => {
+  try {
+    await obtenerDataset(req.usuario.id, req.params.id, { conDatos: false }); // verifica que sea suyo
+    res.json(await listarAnalisis(req.usuario.id, req.params.id));
   } catch (err) {
     next(err);
   }

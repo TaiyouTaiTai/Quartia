@@ -1,12 +1,15 @@
 {
   "name": "estadistica-backend",
   "version": "1.0.0",
-  "description": "Backend de app de estadística asistida",
+  "description": "Backend de estadistica-visual: estadística didáctica con explicación paso a paso",
   "main": "src/server.js",
   "type": "module",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node --watch src/server.js"
+    "dev": "node --watch src/server.js",
+    "test": "node --test test/*.test.js",
+    "seed": "node scripts/seed.js",
+    "db:check": "node test-db.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -15,8 +18,11 @@
     "exceljs": "^4.4.0",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
-    "multer": "^1.4.5-lts.1",
+    "multer": "^2.4.0",
     "mysql2": "^3.11.0",
     "zod": "^3.23.8"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }
