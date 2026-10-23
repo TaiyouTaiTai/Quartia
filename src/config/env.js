@@ -6,6 +6,7 @@ dotenv.config();
 // Valida las variables de entorno al arrancar: si falta algo, el servidor
 // no levanta y dice exactamente qué falta (en vez de fallar a medio request).
 const esquema = z.object({
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.coerce.number().int().positive().default(3000),
   DB_HOST: z.string().min(1),
   DB_PORT: z.coerce.number().int().positive().default(3306),
@@ -18,6 +19,10 @@ const esquema = z.object({
   MAX_FILE_MB: z.coerce.number().positive().default(5),
   MAX_FILAS: z.coerce.number().int().positive().default(50000),
   MAX_COLUMNAS: z.coerce.number().int().positive().default(200)
+}).refine(e => e.NODE_ENV !== 'production' || e.CORS_ORIGIN.trim() !== '', {
+  // Sin CORS_ORIGIN se acepta cualquier origen: aceptable en desarrollo, nunca en producción
+  path: ['CORS_ORIGIN'],
+  message: 'en producción es obligatorio (dominio del frontend)'
 });
 
 const resultado = esquema.safeParse(process.env);
