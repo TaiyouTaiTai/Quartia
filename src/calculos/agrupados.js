@@ -16,7 +16,11 @@ function techo(n, decimales) {
 
 function calcularK(x, n, rango, metodo) {
   if (metodo === 'raiz') {
-    return { k: Math.ceil(Math.sqrt(n)), explicacion: 'Regla de la raíz: k = √n', expresion: `√${n}` };
+    return {
+      k: Math.ceil(Math.sqrt(n)),
+      explicacion: 'Regla de la raíz: k = √n',
+      expresion: `√${n} = ${r(Math.sqrt(n), 2)} → redondeado hacia arriba`
+    };
   }
   if (metodo === 'scott') {
     const s = desviacionMuestral(x);
@@ -25,13 +29,13 @@ function calcularK(x, n, rango, metodo) {
     return {
       k: Math.ceil(rango / h),
       explicacion: 'Regla de Scott: ancho ideal h = 3.49 · s · n^(-1/3), y k = rango / h',
-      expresion: `h = 3.49 × ${r(s, 4)} × ${n}^(-1/3) = ${r(h, 4)};  k = ${r(rango, 4)} / ${r(h, 4)}`
+      expresion: `h = 3.49 × ${r(s, 4)} × ${n}^(-1/3) = ${r(h, 4)};  k = ${r(rango, 4)} / ${r(h, 4)} = ${r(rango / h, 2)} → redondeado hacia arriba`
     };
   }
   return {
     k: Math.ceil(1 + 3.322 * Math.log10(n)),
-    explicacion: 'Regla de Sturges: k = 1 + 3.322 · log₁₀(n), redondeado hacia arriba',
-    expresion: `1 + 3.322 × log₁₀(${n}) = ${r(1 + 3.322 * Math.log10(n), 4)}`
+    explicacion: 'Regla de Sturges: k = 1 + 3.322 · log₁₀(n)',
+    expresion: `1 + 3.322 × log₁₀(${n}) = ${r(1 + 3.322 * Math.log10(n), 2)} → redondeado hacia arriba`
   };
 }
 

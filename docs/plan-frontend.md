@@ -115,15 +115,15 @@ y una llamada a `/api/health` desde React responde `{ ok: true }`.
 Se piden con `POST /api/graficas`; cada respuesta trae `config` con `titulo`,
 `ejes`, `datos` y `como_leer` (mostrar `como_leer` siempre debajo de la gráfica).
 
-- [ ] Selector con `graficas_permitidas` de la columna.
-- [ ] `histograma` → `BarChart` sin espacio entre barras (`barCategoryGap={0}`),
+- [x] Selector con `graficas_permitidas` de la columna.
+- [x] `histograma` → `BarChart` sin espacio entre barras (`barCategoryGap={0}`),
       eje X con `lim_inf–lim_sup`.
-- [ ] `poligono` y `ojiva` → `LineChart` con `datos: [{ x, y }]`.
-- [ ] `barras` → `BarChart`; `pastel` → `PieChart`.
-- [ ] `dispersion` → `ScatterChart` (pedir segunda columna: `columna_b_id`).
-- [ ] `caja` → **componente propio** (Recharts no trae diagrama de caja): SVG simple
+- [x] `poligono` y `ojiva` → `LineChart` con `datos: [{ x, y }]`.
+- [x] `barras` → `BarChart`; `pastel` → `PieChart`.
+- [x] `dispersion` → `ScatterChart` (pedir segunda columna: `columna_b_id`).
+- [x] `caja` → **componente propio** (Recharts no trae diagrama de caja): SVG simple
       con caja Q1–Q3, línea de mediana, bigotes y puntos atípicos.
-- [ ] Opción `metodo_clases` para histograma/polígono/ojiva.
+- [x] Opción `metodo_clases` para histograma/polígono/ojiva.
 
 ### Fase 5 — Historial de análisis
 - [ ] En el detalle del dataset: `GET /api/datasets/:id/analisis` (nombre, fecha,

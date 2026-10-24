@@ -8,6 +8,8 @@ import EditarColumna from '../componentes/EditarColumna.jsx';
 import TablaDatos from '../componentes/TablaDatos.jsx';
 import PanelCalculo from '../componentes/PanelCalculo.jsx';
 import { TarjetasResultado, Explicacion } from '../componentes/Resultados.jsx';
+import PanelGrafica from '../componentes/PanelGrafica.jsx';
+import Grafica from '../componentes/Grafica.jsx';
 import NoEncontrada from './NoEncontrada.jsx';
 import { ORIGENES, fecha, plural } from '../textos.js';
 
@@ -19,6 +21,8 @@ export default function Detalle() {
   const [editando, setEditando] = useState(null); // columna abierta en el diálogo
   const [calculo, setCalculo] = useState(null);   // { analisis, errores, avisos, columna }
   const [elegido, setElegido] = useState(null);   // resultado cuya explicación se muestra
+  const [modo, setModo] = useState('calcular');   // pestaña: calcular | graficar
+  const [graficas, setGraficas] = useState([]);   // las de esta visita, la más nueva primero
 
   // Qué celdas resaltar según el resultado elegido
   const resaltado = useMemo(() => {
@@ -46,6 +50,7 @@ export default function Detalle() {
     // Cambió la escala o los decimales: los resultados mostrados ya no corresponden
     setCalculo(null);
     setElegido(null);
+    setGraficas([]);
     recargar();
   }
 
@@ -68,40 +73,61 @@ export default function Detalle() {
         </div>
 
         <div className="detalle-analisis">
-          {errorCatalogo && <Alerta>No se pudo cargar el catálogo de estadísticos: {errorCatalogo.message}</Alerta>}
-          {catalogo && <PanelCalculo key={tabla.actualizado_en} tabla={tabla} catalogo={catalogo} alCalcular={alCalcular} />}
+          <div className="pestanas" role="tablist" aria-label="Qué hacer con la tabla">
+            {[['calcular', 'Calcular'], ['graficar', 'Graficar']].map(([m, texto]) => (
+              <button
+                key={m} type="button" role="tab" id={`pestana-${m}`} aria-controls={`panel-${m}`}
+                aria-selected={modo === m} className="pestana" onClick={() => setModo(m)}
+              >
+                {texto}
+              </button>
+            ))}
+          </div>
 
-          {calculo && (
-            <section className="resultados" aria-label="Resultados" aria-live="polite">
-              {calculo.errores.length > 0 && (
-                <div className="revision">
-                  <p className="revision-subtitulo">No se calculó:</p>
-                  <ul>
-                    {calculo.errores.map(e => (
-                      <li key={e.clave}><strong>{catalogo.get(e.clave)?.nombre ?? e.clave}:</strong> {e.error}</li>
-                    ))}
+          <div role="tabpanel" id="panel-graficar" aria-labelledby="pestana-graficar" hidden={modo !== 'graficar'} className="panel-pestana">
+            <PanelGrafica
+              key={tabla.actualizado_en} tabla={tabla}
+              alGraficar={(g, columna) => setGraficas(gs => [{ ...g, decimales: columna.decimales }, ...gs])}
+            />
+            {graficas.map(g => <Grafica key={g.id} config={g.config} decimales={g.decimales} />)}
+          </div>
+
+          <div role="tabpanel" id="panel-calcular" aria-labelledby="pestana-calcular" hidden={modo !== 'calcular'} className="panel-pestana">
+            {errorCatalogo && <Alerta>No se pudo cargar el catálogo de estadísticos: {errorCatalogo.message}</Alerta>}
+            {catalogo && <PanelCalculo key={tabla.actualizado_en} tabla={tabla} catalogo={catalogo} alCalcular={alCalcular} />}
+
+            {calculo && (
+              <section className="resultados" aria-label="Resultados" aria-live="polite">
+                {calculo.errores.length > 0 && (
+                  <div className="revision">
+                    <p className="revision-subtitulo">No se calculó:</p>
+                    <ul>
+                      {calculo.errores.map(e => (
+                        <li key={e.clave}><strong>{catalogo.get(e.clave)?.nombre ?? e.clave}:</strong> {e.error}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {calculo.avisos.length > 0 && (
+                  <ul className="avisos-calculo">
+                    {calculo.avisos.map((a, i) => <li key={i}>{a}</li>)}
                   </ul>
-                </div>
-              )}
-              {calculo.avisos.length > 0 && (
-                <ul className="avisos-calculo">
-                  {calculo.avisos.map((a, i) => <li key={i}>{a}</li>)}
-                </ul>
-              )}
-              {calculo.analisis && (
-                <>
-                  <p className="campo-ayuda">Toca un resultado para ver cómo salió.</p>
-                  <TarjetasResultado
-                    resultados={calculo.analisis.resultados} elegido={elegido} alElegir={setElegido}
-                    decimales={calculo.columna.decimales}
-                  />
-                  {elegido && (
-                    <Explicacion resultado={elegido} definicion={catalogo.get(elegido.clave)} columna={calculo.columna} />
-                  )}
-                </>
-              )}
-            </section>
-          )}
+                )}
+                {calculo.analisis && (
+                  <>
+                    <p className="campo-ayuda">Toca un resultado para ver cómo salió.</p>
+                    <TarjetasResultado
+                      resultados={calculo.analisis.resultados} elegido={elegido} alElegir={setElegido}
+                      decimales={calculo.columna.decimales}
+                    />
+                    {elegido && (
+                      <Explicacion resultado={elegido} definicion={catalogo.get(elegido.clave)} columna={calculo.columna} />
+                    )}
+                  </>
+                )}
+              </section>
+            )}
+          </div>
         </div>
       </div>
 
