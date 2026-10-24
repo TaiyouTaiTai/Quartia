@@ -74,12 +74,12 @@ Quartia/
 y una llamada a `/api/health` desde React responde `{ ok: true }`.
 
 ### Fase 1 — Sesión
-- [ ] `api/cliente.js`: agrega el token, convierte errores del backend
+- [x] `api/cliente.js`: agrega el token, convierte errores del backend
       (`error`, `detalles[]` de zod) en mensajes para formularios; en 401 cierra sesión.
-- [ ] Páginas **Registro** y **Login** (`POST /api/auth/registro`, `/api/auth/login`).
-- [ ] Contexto de sesión: al cargar, `GET /api/auth/me` para validar el token guardado.
-- [ ] Ruta protegida que redirige a `/login`; botón de cerrar sesión.
-- [ ] Mostrar el 429 del límite de intentos ("Espera unos minutos…").
+- [x] Páginas **Registro** y **Login** (`POST /api/auth/registro`, `/api/auth/login`).
+- [x] Contexto de sesión: al cargar, `GET /api/auth/me` para validar el token guardado.
+- [x] Ruta protegida que redirige a `/login`; botón de cerrar sesión.
+- [x] Mostrar el 429 del límite de intentos ("Espera unos minutos…").
 
 ### Fase 2 — Datasets
 - [ ] **Lista** (`GET /api/datasets`): título, origen, filas × columnas, fecha; borrar (`DELETE`).

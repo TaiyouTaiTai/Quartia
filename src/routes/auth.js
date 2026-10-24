@@ -8,17 +8,20 @@ import { limiteIntentos } from '../middlewares/limiteIntentos.js';
 
 const router = Router();
 
-const correo = z.string().trim().toLowerCase().email().max(190);
+// Los mensajes llegan tal cual al formulario del frontend: van en español
+const correo = z.string().trim().toLowerCase().email('Escribe un correo válido').max(190, 'El correo es demasiado largo');
 
 const registroSchema = z.object({
   correo,
-  nombre: z.string().trim().min(2).max(120),
-  clave: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres').max(72) // bcrypt solo usa 72 bytes
+  nombre: z.string().trim().min(2, 'Escribe tu nombre (al menos 2 letras)').max(120, 'El nombre es demasiado largo'),
+  clave: z.string()
+    .min(8, 'La contraseña debe tener al menos 8 caracteres')
+    .max(72, 'La contraseña puede tener como máximo 72 caracteres') // bcrypt solo usa 72 bytes
 });
 
 const loginSchema = z.object({
   correo,
-  clave: z.string().min(1).max(72)
+  clave: z.string().min(1, 'Escribe tu contraseña').max(72, 'La contraseña puede tener como máximo 72 caracteres')
 });
 
 // Hash de relleno: si el correo no existe igual se compara contra algo, para que
