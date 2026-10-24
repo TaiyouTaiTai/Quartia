@@ -106,11 +106,12 @@ router.delete('/:id', validar(idParam, 'params'), async (req, res, next) => {
 // PATCH /api/datasets/:id/columnas/:columnaId — corregir lo detectado automáticamente.
 // Ej.: una columna "satisfacción (1-5)" se detecta como razón, pero es ordinal.
 // Solo estos campos se pueden cambiar (la lista blanca la impone zod con .strict()).
+// Los mensajes llegan tal cual al formulario del frontend: van en español
 const columnaSchema = z.object({
-  nombre: z.string().trim().min(1).max(150),
+  nombre: z.string().trim().min(1, 'El nombre no puede quedar vacío').max(150, 'El nombre es demasiado largo'),
   escala: z.enum(['nominal', 'ordinal', 'intervalo', 'razon']),
-  unidad: z.string().trim().max(40).nullable(),
-  decimales: z.number().int().min(0).max(10)
+  unidad: z.string().trim().max(40, 'La unidad puede tener como máximo 40 caracteres').nullable(),
+  decimales: z.number().int('Los decimales deben ser un número entero').min(0, 'Mínimo 0 decimales').max(10, 'Máximo 10 decimales')
 }).partial().strict();
 
 router.patch(

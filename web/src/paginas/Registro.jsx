@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router';
-import Acceso, { useEnvio } from './Acceso.jsx';
+import Acceso from './Acceso.jsx';
+import { useEnvio } from '../api/hooks.js';
 import Campo from '../componentes/Campo.jsx';
 import Alerta from '../componentes/Alerta.jsx';
 import { useSesion } from '../sesion/Sesion.jsx';

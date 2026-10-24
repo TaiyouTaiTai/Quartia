@@ -17,7 +17,7 @@ export default function Marco() {
             <NavLink to="/" end>Mis tablas</NavLink>
             <div className="usuario">
               <span className="iniciales" aria-hidden="true">{iniciales(usuario.nombre)}</span>
-              <span className="secundario">{usuario.nombre}</span>
+              <span className="secundario" title={usuario.correo}>{usuario.nombre}</span>
               <button type="button" className="boton boton-enlace" onClick={cerrarSesion}>Cerrar sesión</button>
             </div>
           </nav>

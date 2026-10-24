@@ -82,14 +82,14 @@ y una llamada a `/api/health` desde React responde `{ ok: true }`.
 - [x] Mostrar el 429 del límite de intentos ("Espera unos minutos…").
 
 ### Fase 2 — Datasets
-- [ ] **Lista** (`GET /api/datasets`): título, origen, filas × columnas, fecha; borrar (`DELETE`).
-- [ ] **Subir archivo** `.xlsx`/`.csv` (`POST /api/datasets/archivo`, multipart,
+- [x] **Lista** (`GET /api/datasets`): título, origen, filas × columnas, fecha; borrar (`DELETE`).
+- [x] **Subir archivo** `.xlsx`/`.csv` (`POST /api/datasets/archivo`, multipart,
       campo `archivo`, opcional `titulo`). Mostrar `avisos` que devuelve el backend.
-- [ ] **Crear tabla en la app** (`POST /api/datasets`): editor simple de
+- [x] **Crear tabla en la app** (`POST /api/datasets`): editor simple de
       columnas/filas o pegar desde Excel (texto separado por tabuladores).
-- [ ] **Detalle** (`GET /api/datasets/:id`): tabla de datos + encabezado de cada
+- [x] **Detalle** (`GET /api/datasets/:id`): tabla de datos + encabezado de cada
       columna con tipo, escala y naturaleza.
-- [ ] Corregir columna (`PATCH /api/datasets/:id/columnas/:columnaId`): nombre,
+- [x] Corregir columna (`PATCH /api/datasets/:id/columnas/:columnaId`): nombre,
       escala, unidad, decimales. Recargar permisos después de cambiar la escala.
 
 ### Fase 3 — Cálculos y hover educativo (el corazón de la demo)
