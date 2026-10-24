@@ -93,23 +93,23 @@ y una llamada a `/api/health` desde React responde `{ ok: true }`.
       escala, unidad, decimales. Recargar permisos después de cambiar la escala.
 
 ### Fase 3 — Cálculos y hover educativo (el corazón de la demo)
-- [ ] **Panel de cálculos** por columna: checkboxes con `estadisticos_permitidos`
+- [x] **Panel de cálculos** por columna: checkboxes con `estadisticos_permitidos`
       de esa columna; parámetro para `cuartil` (1–3), `decil` (1–9), `percentil` (1–99);
       opciones `agrupado`, `metodo_clases` (sturges | raiz | scott), `poblacional`.
-- [ ] Enviar `POST /api/calculos`; mostrar `errores` (motivo del catálogo, p. ej.
+- [x] Enviar `POST /api/calculos`; mostrar `errores` (motivo del catálogo, p. ej.
       "la media no aplica a una columna nominal") y `avisos`.
-- [ ] Cargar el catálogo una vez (`GET /api/definiciones`) y guardarlo en memoria.
-- [ ] **TarjetaResultado**: nombre + valor (`valor_num`, `valor_txt` o `valor_json`).
-- [ ] **HoverExplicacion** (al pasar el mouse o tocar la tarjeta), según el contrato
+- [x] Cargar el catálogo una vez (`GET /api/definiciones`) y guardarlo en memoria.
+- [x] **TarjetaResultado**: nombre + valor (`valor_num`, `valor_txt` o `valor_json`).
+- [x] **HoverExplicacion** (al pasar el mouse o tocar la tarjeta), según el contrato
       de `estadistica-visual/docs/plan-db-mvp.md` §6:
   - Fórmula con KaTeX (`sustitucion.formula_latex`).
   - Qué significa cada símbolo (`simbolos` del catálogo).
   - Números sustituidos (`sustitucion.variables`, `sustitucion.resultado`).
   - Paso a paso (`pasos[]`: `texto`, `expresion`, `resultado`).
   - "Cuándo usar" y "error común" (`cuando_usar`, `malinterpretacion`).
-- [ ] **Resaltar en la tabla** las celdas usadas (`datos_usados.filas`) y marcar las
+- [x] **Resaltar en la tabla** las celdas usadas (`datos_usados.filas`) y marcar las
       excluidas con su motivo (`datos_usados.excluidos`).
-- [ ] `resumen_caja` (`valor_json`): mostrarlo como mini tabla min/Q1/mediana/Q3/max/RIQ/atípicos.
+- [x] `resumen_caja` (`valor_json`): mostrarlo como mini tabla min/Q1/mediana/Q3/max/RIQ/atípicos.
 
 ### Fase 4 — Gráficas
 Se piden con `POST /api/graficas`; cada respuesta trae `config` con `titulo`,

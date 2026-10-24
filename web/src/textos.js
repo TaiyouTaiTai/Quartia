@@ -40,4 +40,27 @@ export const ORIGENES = {
 export const fecha = (iso) =>
   new Date(iso).toLocaleDateString('es', { day: 'numeric', month: 'short', year: 'numeric' });
 
-export const plural = (n, uno, varios) => `${n.toLocaleString('es')} ${n === 1 ? uno : varios}`;
+export const plural = (n, uno, varios) => `${n.toLocaleString('es-GT')} ${n === 1 ? uno : varios}`;
+
+// Guatemala usa punto decimal (como los pasos que arma el backend: "390 / 5")
+const LOCALE = 'es-GT';
+
+export const numero = (n, decimales = 2) =>
+  n.toLocaleString(LOCALE, { maximumFractionDigits: decimales });
+
+// Orden en que se agrupan los estadísticos en el panel de cálculo
+export const CATEGORIAS = {
+  tendencia_central: 'Tendencia central',
+  dispersion: 'Dispersión',
+  posicion: 'Posición',
+  forma: 'Forma',
+  frecuencia: 'Frecuencia',
+  asociacion: 'Asociación'
+};
+
+// Estadísticos que necesitan un parámetro (cuál cuartil, decil o percentil)
+export const PARAMETROS = {
+  cuartil: { min: 1, max: 3, paso: 1, porDefecto: 1, etiqueta: 'Cuál cuartil' },
+  decil: { min: 1, max: 9, paso: 1, porDefecto: 5, etiqueta: 'Cuál decil' },
+  percentil: { min: 1, max: 99, paso: 'any', porDefecto: 50, etiqueta: 'Cuál percentil' }
+};

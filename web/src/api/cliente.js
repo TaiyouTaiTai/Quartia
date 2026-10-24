@@ -25,10 +25,11 @@ export function guardarToken(token) {
 }
 
 export class ErrorApi extends Error {
-  constructor(status, mensaje, campos = {}) {
+  constructor(status, mensaje, campos = {}, datos = null) {
     super(mensaje);
     this.status = status;
     this.campos = campos; // { correo: 'Escribe un correo válido', … }
+    this.datos = datos;   // la respuesta completa, por si trae más detalle (ej. errores de /calculos)
   }
 }
 
@@ -64,5 +65,5 @@ export async function pedir(ruta, { metodo = 'GET', body } = {}) {
   if (r.status === 401 && token) alNoAutorizado();
 
   const campos = Object.fromEntries((datos?.detalles ?? []).map(d => [d.campo, d.mensaje]));
-  throw new ErrorApi(r.status, datos?.error ?? 'Algo salió mal. Intenta de nuevo.', campos);
+  throw new ErrorApi(r.status, datos?.error ?? 'Algo salió mal. Intenta de nuevo.', campos, datos);
 }

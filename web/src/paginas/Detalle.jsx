@@ -1,26 +1,54 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router';
 import { useCargar } from '../api/hooks.js';
 import * as datasets from '../api/datasets.js';
+import * as calculos from '../api/calculos.js';
 import Alerta from '../componentes/Alerta.jsx';
 import EditarColumna from '../componentes/EditarColumna.jsx';
+import TablaDatos from '../componentes/TablaDatos.jsx';
+import PanelCalculo from '../componentes/PanelCalculo.jsx';
+import { TarjetasResultado, Explicacion } from '../componentes/Resultados.jsx';
 import NoEncontrada from './NoEncontrada.jsx';
-import { ESCALAS, TIPOS, ORIGENES, fecha, plural } from '../textos.js';
-
-// Más filas que esto congelan el navegador; los cálculos sí usan todas
-const FILAS_VISIBLES = 200;
+import { ORIGENES, fecha, plural } from '../textos.js';
 
 export default function Detalle() {
   const { id } = useParams();
   const { state } = useLocation();
   const { datos: tabla, error, cargando, recargar } = useCargar(() => datasets.obtener(id), [id]);
+  const { datos: catalogo, error: errorCatalogo } = useCargar(calculos.obtenerCatalogo, []);
   const [editando, setEditando] = useState(null); // columna abierta en el diálogo
+  const [calculo, setCalculo] = useState(null);   // { analisis, errores, avisos, columna }
+  const [elegido, setElegido] = useState(null);   // resultado cuya explicación se muestra
+
+  // Qué celdas resaltar según el resultado elegido
+  const resaltado = useMemo(() => {
+    if (!elegido) return null;
+    const u = elegido.datos_usados;
+    return {
+      columnaId: elegido.columna_id,
+      filas: new Set(u.filas),
+      excluidos: new Map(u.excluidos.map(e => [e.fila, e.motivo]))
+    };
+  }, [elegido]);
 
   if (error?.status === 404 || error?.status === 400) return <NoEncontrada />;
   if (error) return <main className="pagina"><Alerta>{error.message}</Alerta></main>;
   if (cargando && !tabla) return <p role="status" className="cargando">Abriendo tu tabla…</p>;
 
-  const filas = tabla.datos.filas;
+  function alCalcular(respuesta, columna) {
+    setCalculo({ ...respuesta, columna });
+    setElegido(respuesta.analisis?.resultados[0] ?? null);
+  }
+
+  function alCerrarEdicion(guardo) {
+    setEditando(null);
+    if (!guardo) return;
+    // Cambió la escala o los decimales: los resultados mostrados ya no corresponden
+    setCalculo(null);
+    setElegido(null);
+    recargar();
+  }
+
   return (
     <main className="pagina">
       <p className="migas"><Link to="/">Mis tablas</Link> / {tabla.titulo}</p>
@@ -34,64 +62,50 @@ export default function Detalle() {
 
       {(state?.nueva || tabla.avisos.length > 0) && <Revision nueva={state?.nueva} avisos={tabla.avisos} />}
 
-      <section className="tarjeta" aria-label="Datos">
-        <div className="desplazable">
-          <table className="tabla-datos">
-            <thead>
-              <tr>
-                <th scope="col" className="tabla-num">#</th>
-                {tabla.columnas.map(col => (
-                  <th scope="col" key={col.id} className={col.tipo_dato === 'numerico' ? 'num' : undefined}>
-                    <span className="columna-encabezado">
-                      <span>{col.nombre}{col.unidad && <span className="secundario"> ({col.unidad})</span>}</span>
-                      <button
-                        type="button" className="boton-icono" onClick={() => setEditando(col)}
-                        aria-label={`Editar la columna ${col.nombre}`} title="Corregir nombre, escala, unidad o decimales"
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
-                          <path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </button>
-                    </span>
-                    <span className="columna-meta">
-                      {ESCALAS[col.escala].nombre} · {TIPOS[col.tipo_dato]}
-                      {col.n_nulos > 0 && ` · ${plural(col.n_nulos, 'vacía', 'vacías')}`}
-                    </span>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filas.slice(0, FILAS_VISIBLES).map((fila, i) => (
-                <tr key={i}>
-                  <td className="tabla-num">{i + 1}</td>
-                  {tabla.columnas.map(col => {
-                    const v = fila[col.posicion];
-                    return (
-                      <td key={col.id} className={col.tipo_dato === 'numerico' ? 'num' : undefined}>
-                        {v === null ? <span className="celda-vacia" aria-label="vacía">—</span> : String(v)}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="detalle-cuerpo">
+        <div className="detalle-datos">
+          <TablaDatos tabla={tabla} resaltado={resaltado} alEditar={setEditando} />
         </div>
-        {filas.length > FILAS_VISIBLES && (
-          <p className="tabla-pie">
-            Se muestran las primeras {FILAS_VISIBLES} de {filas.length.toLocaleString('es')} filas. Los cálculos usan todas.
-          </p>
-        )}
-      </section>
 
-      {editando && (
-        <EditarColumna
-          tablaId={tabla.id}
-          columna={editando}
-          alCerrar={(guardo) => { setEditando(null); if (guardo) recargar(); }}
-        />
-      )}
+        <div className="detalle-analisis">
+          {errorCatalogo && <Alerta>No se pudo cargar el catálogo de estadísticos: {errorCatalogo.message}</Alerta>}
+          {catalogo && <PanelCalculo key={tabla.actualizado_en} tabla={tabla} catalogo={catalogo} alCalcular={alCalcular} />}
+
+          {calculo && (
+            <section className="resultados" aria-label="Resultados" aria-live="polite">
+              {calculo.errores.length > 0 && (
+                <div className="revision">
+                  <p className="revision-subtitulo">No se calculó:</p>
+                  <ul>
+                    {calculo.errores.map(e => (
+                      <li key={e.clave}><strong>{catalogo.get(e.clave)?.nombre ?? e.clave}:</strong> {e.error}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {calculo.avisos.length > 0 && (
+                <ul className="avisos-calculo">
+                  {calculo.avisos.map((a, i) => <li key={i}>{a}</li>)}
+                </ul>
+              )}
+              {calculo.analisis && (
+                <>
+                  <p className="campo-ayuda">Toca un resultado para ver cómo salió.</p>
+                  <TarjetasResultado
+                    resultados={calculo.analisis.resultados} elegido={elegido} alElegir={setElegido}
+                    decimales={calculo.columna.decimales}
+                  />
+                  {elegido && (
+                    <Explicacion resultado={elegido} definicion={catalogo.get(elegido.clave)} columna={calculo.columna} />
+                  )}
+                </>
+              )}
+            </section>
+          )}
+        </div>
+      </div>
+
+      {editando && <EditarColumna tablaId={tabla.id} columna={editando} alCerrar={alCerrarEdicion} />}
     </main>
   );
 }
