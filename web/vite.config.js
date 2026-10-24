@@ -6,6 +6,11 @@ import react from '@vitejs/plugin-react';
 // Si el backend corre en otro puerto: API_URL=http://localhost:4000 npm run dev
 export default defineConfig({
   plugins: [react()],
+  build: {
+    // La página de una tabla trae KaTeX y Recharts (~700 kB, ~200 kB comprimidos).
+    // Se descarga aparte, solo al abrir una tabla (ver lazy() en App.jsx).
+    chunkSizeWarningLimit: 800
+  },
   server: {
     port: 5173,
     proxy: {

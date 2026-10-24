@@ -134,15 +134,16 @@ Se piden con `POST /api/graficas`; cada respuesta trae `config` con `titulo`,
 - [x] Aviso al reemplazar datos (`PUT /api/datasets/:id`): borra los análisis anteriores.
 
 ### Fase 6 — Pulido y despliegue
-- [ ] Estados de carga, vacío y error en cada página; diseño usable en celular.
-- [ ] Aplicar el diseño del equipo (colores, tipografía, logo).
-- [ ] Desplegar en **Railway**: servicio Node + MySQL en el mismo proyecto.
+- [x] Estados de carga, vacío y error en cada página; diseño usable en celular.
+- [x] Aplicar el diseño del equipo (colores, tipografía, logo) + ícono, títulos de pestaña y carga diferida de KaTeX/Recharts.
+- [ ] Backend listo para proxy (`TRUST_PROXY`), encabezados de seguridad y caché del frontend: **hecho**.
+- [ ] Desplegar en **Railway** con dominio propio: servicio Node + MySQL en el mismo proyecto.
   - Build: `npm ci && npm run build` · Start: `npm start`.
   - Variables según `.env.production.example`, con un **`JWT_SECRET` nuevo**.
   - `CORS_ORIGIN` = dominio de Railway (obligatorio con `NODE_ENV=production`,
     aunque al ser mismo origen el navegador no lo use).
   - Cargar `schema.sql` y correr `npm run seed` contra la base de producción.
-- [ ] Actualizar el README con cómo correr y desplegar el frontend.
+- [x] Actualizar el README con cómo correr el frontend (falta la sección de despliegue).
 
 ---
 

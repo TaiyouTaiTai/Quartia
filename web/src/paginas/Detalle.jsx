@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useParams, useSearchParams } from 'react-router';
-import { useCargar } from '../api/hooks.js';
+import { useCargar, useTitulo } from '../api/hooks.js';
 import { ErrorApi } from '../api/cliente.js';
 import * as datasets from '../api/datasets.js';
 import * as calculos from '../api/calculos.js';
@@ -32,6 +32,7 @@ export default function Detalle() {
   const [ultimo, setUltimo] = useState(null);      // { errores, avisos } del último cálculo
   const [elegido, setElegido] = useState(null);    // resultado cuya explicación se muestra
   const [errorAnalisis, setErrorAnalisis] = useState('');
+  useTitulo(tabla?.titulo);
 
   // Abrir el análisis que dice la URL (?analisis=7), ej. desde el historial
   useEffect(() => {

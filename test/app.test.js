@@ -113,3 +113,13 @@ test('frontend: /api nunca devuelve el index.html', async () => {
     assert.match(r.headers.get('content-type'), /json/, ruta);
   }
 });
+
+test('encabezados de seguridad y caché del frontend', async () => {
+  const api = await fetch(`${base}/health`);
+  assert.equal(api.headers.get('x-content-type-options'), 'nosniff');
+  assert.equal(api.headers.get('x-frame-options'), 'DENY');
+  const asset = await fetch(`${raiz}/assets/app.js`);
+  assert.match(asset.headers.get('cache-control'), /immutable/);
+  const pagina = await fetch(`${raiz}/tablas/1`);
+  assert.equal(pagina.headers.get('cache-control'), 'no-cache');
+});

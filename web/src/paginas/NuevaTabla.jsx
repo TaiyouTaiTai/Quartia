@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { useEnvio } from '../api/hooks.js';
+import { useEnvio, useTitulo } from '../api/hooks.js';
 import * as datasets from '../api/datasets.js';
 import Campo from '../componentes/Campo.jsx';
 import Alerta from '../componentes/Alerta.jsx';
@@ -54,6 +54,7 @@ export default function NuevaTabla() {
 // inicial: { titulo, columnas, filas } · alGuardar({ titulo, columnas, filas }) → promesa
 // aviso: texto que se muestra junto al botón (ej. que se borrarán los análisis)
 export function EditorTabla({ titulo: tituloPagina, migas, inicial, aviso, textoBoton, cancelarA = '/', alGuardar }) {
+  useTitulo(tituloPagina);
   const [titulo, setTitulo] = useState(inicial?.titulo ?? '');
   const [matriz, setMatriz] = useState(() => (inicial ? aMatriz(inicial) : vacia(6, 3)));
   const { errores, mensaje, enviando, enviar, setMensaje } = useEnvio();

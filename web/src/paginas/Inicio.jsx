@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { useCargar } from '../api/hooks.js';
+import { useCargar, useTitulo } from '../api/hooks.js';
 import * as datasets from '../api/datasets.js';
 import { ErrorApi } from '../api/cliente.js';
 import SubirArchivo from '../componentes/SubirArchivo.jsx';
@@ -9,6 +9,7 @@ import { ORIGENES, fecha, plural } from '../textos.js';
 
 // "Mis tablas": subir un archivo, crear una tabla y ver las que ya hay.
 export default function Inicio() {
+  useTitulo('Mis tablas');
   const { datos: tablas, error, cargando, recargar } = useCargar(datasets.listar, []);
 
   return (

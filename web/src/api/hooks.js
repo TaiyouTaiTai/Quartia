@@ -46,3 +46,10 @@ export function useEnvio(mensajePorEstado = {}) {
 
   return { errores, mensaje, enviando, enviar, setMensaje };
 }
+
+// Título de la pestaña del navegador: "Mis tablas · Quartia"
+export function useTitulo(titulo) {
+  useEffect(() => {
+    document.title = titulo ? `${titulo} · Quartia` : 'Quartia';
+  }, [titulo]);
+}

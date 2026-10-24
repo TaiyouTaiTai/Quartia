@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router';
 import Acceso from './Acceso.jsx';
-import { useEnvio } from '../api/hooks.js';
+import { useEnvio, useTitulo } from '../api/hooks.js';
 import Campo from '../componentes/Campo.jsx';
 import Alerta from '../componentes/Alerta.jsx';
 import { useSesion } from '../sesion/Sesion.jsx';
 
 export default function Login() {
+  useTitulo('Iniciar sesión');
   const { entrar } = useSesion();
   const ubicacion = useLocation();
   const [correo, setCorreo] = useState('');

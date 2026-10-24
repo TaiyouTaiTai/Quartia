@@ -20,6 +20,8 @@ const esquema = z.object({
   MAX_FILE_MB: z.coerce.number().positive().default(5),
   MAX_FILAS: z.coerce.number().int().positive().default(50000),
   MAX_COLUMNAS: z.coerce.number().int().positive().default(200),
+  // Cuántos proxies hay delante (1 en Railway/Render). Vacío = ninguno (desarrollo)
+  TRUST_PROXY: z.coerce.number().int().min(0).default(0),
   // Carpeta del frontend compilado que sirve Express
   WEB_DIST: z.string().default(fileURLToPath(new URL('../../web/dist', import.meta.url)))
 }).refine(e => e.NODE_ENV !== 'production' || e.CORS_ORIGIN.trim() !== '', {

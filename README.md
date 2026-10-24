@@ -1,8 +1,12 @@
-# Backend — estadistica-visual
+# Quartia
 
-API en Node.js para el sistema de estadística **visual y didáctica**. Cada
-resultado trae la fórmula, los números sustituidos, el paso a paso y las celdas
-usadas, siguiendo el *contrato del hover* de `estadistica-visual/docs/plan-db-mvp.md`.
+Estadística **visual y didáctica**: subes un Excel o CSV (o creas la tabla en la
+app), calculas y graficas, y cada resultado explica cómo salió — la fórmula, los
+números sustituidos, el paso a paso y las celdas usadas, siguiendo el *contrato
+del hover* de `estadistica-visual/docs/plan-db-mvp.md`.
+
+Una sola app: API en Node.js/Express (`src/`) y frontend en React (`web/`), que
+en producción se sirven juntos desde el mismo servidor.
 
 ## Requisitos
 
@@ -39,7 +43,7 @@ correr las veces que quieras: actualiza en vez de duplicar.
 ## Estructura
 
 ```
-src/
+src/                       ── API ──
 ├── server.js              arranque (listen + apagado ordenado)
 ├── app.js                 middlewares y rutas
 ├── config/                env (validado con zod) y pool de MySQL
@@ -56,6 +60,16 @@ src/
 └── graficas/              datos para Recharts/Chart.js
 scripts/seed.js            carga catalogo.json en la base
 test/                      pruebas con node --test
+
+web/src/                   ── Frontend (React + Vite) ──
+├── App.jsx                rutas (las páginas pesadas se cargan bajo demanda)
+├── api/                   cliente de la API (token, errores por campo) y hooks
+├── sesion/                login, registro y rutas protegidas
+├── paginas/               Mis tablas, Crear/Editar tabla, Detalle (calcular, graficar, historial)
+├── componentes/           tabla de datos, panel de cálculo, explicación, gráficas…
+├── estilos/               sistema visual "papel, grafito y tinta azul"
+└── textos.js              nombres para mostrar y formato de números
+docs/                      plan del frontend y diseño aprobado
 ```
 
 ## Endpoints
