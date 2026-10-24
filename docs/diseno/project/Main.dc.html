@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Quartia — Sistema visual</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&amp;family=Inter:wght@400;500;600&amp;family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#3E5C76}a:hover{color:#2B4357}
+</style>
+</helmet>
+<div style="width: 1280px; height: 1180px; box-sizing: border-box; padding: 64px 72px; background-color: #F4EEE3; background-image: radial-gradient(rgba(59,55,50,0.05) 1px, transparent 1px); background-size: 5px 5px; color: #3B3732; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column; gap: 48px">
+
+  <header style="display: flex; justify-content: space-between; align-items: flex-end">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <p style="margin: 0; font-family: Caveat, cursive; font-size: 72px; line-height: 1; font-weight: 600; color: #3B3732">Quartia</p>
+      <svg width="220" height="12" viewBox="0 0 220 12" aria-hidden="true"><path d="M3 8 C 50 3, 110 11, 217 5" stroke="{{tinta}}" stroke-width="2.5" fill="none" stroke-linecap="round"></path></svg>
+      <p style="margin: 8px 0 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 22px; color: #6B645A">Estadística explicada, como en tu cuaderno.</p>
+    </div>
+    <p style="margin: 0; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: #6B645A">Sistema visual · v0.1</p>
+  </header>
+
+  <section style="display: flex; flex-direction: column; gap: 20px">
+    <h2 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-weight: 600; font-size: 26px">Paleta</h2>
+    <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 16px">
+      <sc-for list="{{colores}}" as="c" hint-placeholder-count="7">
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <div style="height: 96px; border-radius: 6px; border: 1px solid #D6CBB8; background: {{c.hex}}"></div>
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 14px; font-weight: 600">{{c.nombre}}</span>
+            <span style="font-size: 13px; color: #6B645A; font-variant-numeric: tabular-nums">{{c.hex}}</span>
+            <span style="font-size: 13px; color: #6B645A">{{c.uso}}</span>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px">
+    <div style="background: #FBF8F2; border: 1px solid #D6CBB8; border-radius: 8px; padding: 24px; display: flex; flex-direction: column; gap: 12px">
+      <span style="font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: #6B645A">Lápiz — Caveat</span>
+      <p style="margin: 0; font-family: Caveat, cursive; font-size: 40px; line-height: 1.1">Suma todos los valores</p>
+      <p style="margin: 0; font-size: 14px; color: #6B645A; line-height: 1.5">Para explicaciones, notas al margen y el logotipo. Nunca menor a 20 px.</p>
+    </div>
+    <div style="background: #FBF8F2; border: 1px solid #D6CBB8; border-radius: 8px; padding: 24px; display: flex; flex-direction: column; gap: 12px">
+      <span style="font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: #6B645A">Títulos — Source Serif 4</span>
+      <p style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 34px; font-weight: 600; line-height: 1.15">Media aritmética</p>
+      <p style="margin: 0; font-size: 14px; color: #6B645A; line-height: 1.5">Da el tono formal y fino: títulos, nombres de estadísticos y fórmulas.</p>
+    </div>
+    <div style="background: #FBF8F2; border: 1px solid #D6CBB8; border-radius: 8px; padding: 24px; display: flex; flex-direction: column; gap: 12px">
+      <span style="font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: #6B645A">Interfaz y datos — Inter</span>
+      <p style="margin: 0; font-size: 30px; font-weight: 500; font-variant-numeric: tabular-nums; line-height: 1.2">70 · 85 · 90 · 60 · 85</p>
+      <p style="margin: 0; font-size: 14px; color: #6B645A; line-height: 1.5">Botones, formularios y tablas. Cifras tabulares para que las columnas se alineen.</p>
+    </div>
+  </section>
+
+  <section style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; align-items: start">
+    <div style="display: flex; flex-direction: column; gap: 24px">
+      <h2 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-weight: 600; font-size: 26px">Componentes</h2>
+      <div style="display: flex; gap: 12px; flex-wrap: wrap">
+        <button type="button" style="min-height: 44px; padding: 0 22px; border-radius: 6px; border: 1px solid {{tinta}}; background: {{tinta}}; color: #FBF8F2; font: 500 15px Inter, sans-serif">Calcular</button>
+        <button type="button" style="min-height: 44px; padding: 0 22px; border-radius: 6px; border: 1px solid #BFB29C; background: #FBF8F2; color: #3B3732; font: 500 15px Inter, sans-serif">Subir Excel o CSV</button>
+        <button type="button" style="min-height: 44px; padding: 0 14px; border-radius: 6px; border: 1px solid transparent; background: transparent; color: {{tinta}}; font: 500 15px Inter, sans-serif; text-decoration: underline; text-underline-offset: 4px">¿Cómo salió?</button>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; max-width: 360px">
+        <label for="m-titulo" style="font-size: 14px; font-weight: 500">Nombre de la tabla</label>
+        <input id="m-titulo" type="text" value="Notas del parcial" style="min-height: 44px; box-sizing: border-box; padding: 0 14px; border-radius: 6px; border: 1px solid #BFB29C; background: #FBF8F2; color: #3B3732; font: 400 15px Inter, sans-serif">
+      </div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap">
+        <span style="padding: 4px 12px; border-radius: 999px; background: #E6DCCB; font-size: 13px">Razón · numérica</span>
+        <span style="padding: 4px 12px; border-radius: 999px; background: #E6DCCB; font-size: 13px">Nominal · texto</span>
+        <span style="padding: 4px 12px; border-radius: 999px; background: #F2E3A6; font-size: 13px">5 celdas usadas</span>
+      </div>
+      <div style="display: flex; align-items: flex-start; gap: 10px; padding: 14px 16px; border-radius: 6px; background: #F6E6E1; border: 1px solid #E3C3BA; color: #8A3B2F; font-size: 14px; line-height: 1.5">
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="flex: none; margin-top: 1px"><circle cx="12" cy="12" r="9" fill="none" stroke="#8A3B2F" stroke-width="2"></circle><path d="M12 7v6M12 16.5v.5" stroke="#8A3B2F" stroke-width="2" stroke-linecap="round"></path></svg>
+        <span>La media no aplica a “Carrera”: es una columna nominal, sus valores no se pueden sumar.</span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 24px">
+      <h2 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-weight: 600; font-size: 26px">Nota de papel roto</h2>
+      <div style="filter: drop-shadow(0 3px 4px rgba(59,55,50,0.14))">
+        <div style="background: #FBF8F2; padding: 26px 28px 40px; clip-path: polygon(0% 0%, 100% 0%, 100% 93%, 97% 98%, 94% 94%, 90% 99%, 86% 95%, 82% 98%, 78% 93%, 74% 97%, 70% 94%, 65% 99%, 61% 95%, 57% 98%, 52% 93%, 48% 97%, 44% 94%, 39% 99%, 35% 95%, 31% 98%, 26% 93%, 22% 97%, 18% 94%, 13% 99%, 9% 95%, 5% 98%, 0% 94%); display: flex; flex-direction: column; gap: 10px; background-image: repeating-linear-gradient(transparent 0 31px, rgba(62,92,118,0.12) 31px 32px)">
+          <span style="font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: #6B645A">Así salió</span>
+          <p style="margin: 0; font-family: Caveat, cursive; font-size: 28px; line-height: 32px">1. Suma todos los valores: 70 + 85 + 90 + 60 + 85 = <span style="color: {{tinta}}; font-weight: 600">390</span></p>
+          <p style="margin: 0; font-family: Caveat, cursive; font-size: 28px; line-height: 32px">2. Cuenta cuántos hay: <span style="color: {{tinta}}; font-weight: 600">5</span></p>
+          <p style="margin: 0; font-family: Caveat, cursive; font-size: 28px; line-height: 32px">3. Divide: 390 / 5 = <span style="color: {{tinta}}; font-weight: 600">78</span></p>
+        </div>
+      </div>
+      <p style="margin: 0; font-size: 14px; color: #6B645A; line-height: 1.5">El borde roto y el renglón azul se reservan para lo que explica un cálculo. Así el usuario reconoce de un vistazo dónde está “la explicación”.</p>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tinta":{"editor":"color","default":"#3E5C76","options":["#3E5C76","#5B4A6B","#4F6B4A","#7A4E2D"]},"$preview":{"width":1280,"height":1180}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const tinta = this.props.tinta ?? '#3E5C76';
+    return {
+      tinta,
+      colores: [
+        { nombre: 'Papel', hex: '#F4EEE3', uso: 'Fondo general' },
+        { nombre: 'Hoja', hex: '#FBF8F2', uso: 'Tarjetas y notas' },
+        { nombre: 'Kraft', hex: '#E6DCCB', uso: 'Etiquetas, zonas' },
+        { nombre: 'Borde', hex: '#D6CBB8', uso: 'Líneas finas' },
+        { nombre: 'Grafito', hex: '#3B3732', uso: 'Texto principal' },
+        { nombre: 'Tinta azul', hex: tinta, uso: 'Acento y acciones' },
+        { nombre: 'Marcatextos', hex: '#F2E3A6', uso: 'Celdas usadas' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

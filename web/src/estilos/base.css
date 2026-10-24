@@ -1,0 +1,47 @@
+/* Sistema visual "papel, grafito y tinta azul" (aprobado en docs/diseno/).
+   Todos los colores y fuentes salen de estas variables. */
+:root {
+  --papel: #F4EEE3;        /* fondo general */
+  --hoja: #FBF8F2;         /* tarjetas y notas */
+  --kraft: #E6DCCB;        /* etiquetas, zonas */
+  --borde: #D6CBB8;        /* líneas finas */
+  --borde-fuerte: #BFB29C; /* campos de formulario */
+  --grafito: #3B3732;      /* texto principal */
+  --grafito-suave: #6B645A;/* texto secundario */
+  --tinta: #3E5C76;        /* acento y acciones */
+  --tinta-oscura: #2B4357;
+  --marcatextos: #F2E3A6;  /* celdas usadas en un cálculo */
+  --error: #8A3B2F;
+  --error-fondo: #F6E6E1;
+
+  --fuente-lapiz: Caveat, cursive;                    /* explicaciones y logo, nunca < 20px */
+  --fuente-titulo: 'Source Serif 4', Georgia, serif;  /* títulos y fórmulas */
+  --fuente-ui: Inter, system-ui, sans-serif;          /* interfaz y tablas */
+
+  --radio: 6px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--papel);
+  /* grano de papel muy sutil */
+  background-image: radial-gradient(rgba(59, 55, 50, 0.05) 1px, transparent 1px);
+  background-size: 5px 5px;
+  color: var(--grafito);
+  font-family: var(--fuente-ui);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+h1, h2, h3 { font-family: var(--fuente-titulo); font-weight: 600; margin: 0; }
+
+a { color: var(--tinta); }
+a:hover { color: var(--tinta-oscura); }
+
+:focus-visible { outline: 2px solid var(--tinta); outline-offset: 2px; }
+
+.lapiz { font-family: var(--fuente-lapiz); }
+.secundario { color: var(--grafito-suave); }

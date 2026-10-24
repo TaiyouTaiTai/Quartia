@@ -1,0 +1,17 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-10-23T15:00:00Z" },
+  "title": "Quartia — Propuesta de diseño",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 0, "w": 1280, "h": 1180, "title": "Sistema visual — papel y lápiz" },
+    "Analisis.dc.html": { "x": 1360, "y": 0, "w": 1440, "h": 1180, "title": "Pantalla clave — cálculo con explicación", "expand": "fill" },
+    "Login.dc.html": { "x": 2880, "y": 0, "w": 1440, "h": 860, "title": "Inicio de sesión", "expand": "fill" }
+  },
+  "order": ["Main.dc.html", "Analisis.dc.html", "Login.dc.html"],
+  "notes": {
+    "titulo": { "x": 0, "y": -300, "text": "Quartia — papel, grafito y tinta azul", "kind": "title1", "maxW": 4320 }
+  },
+  "designSystems": []
+}

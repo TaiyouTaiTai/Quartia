@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import { z } from 'zod';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
 
@@ -18,7 +19,9 @@ const esquema = z.object({
   JWT_EXPIRES: z.string().default('7d'),
   MAX_FILE_MB: z.coerce.number().positive().default(5),
   MAX_FILAS: z.coerce.number().int().positive().default(50000),
-  MAX_COLUMNAS: z.coerce.number().int().positive().default(200)
+  MAX_COLUMNAS: z.coerce.number().int().positive().default(200),
+  // Carpeta del frontend compilado que sirve Express
+  WEB_DIST: z.string().default(fileURLToPath(new URL('../../web/dist', import.meta.url)))
 }).refine(e => e.NODE_ENV !== 'production' || e.CORS_ORIGIN.trim() !== '', {
   // Sin CORS_ORIGIN se acepta cualquier origen: aceptable en desarrollo, nunca en producción
   path: ['CORS_ORIGIN'],

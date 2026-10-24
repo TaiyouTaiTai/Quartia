@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Quartia — Iniciar sesión</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&amp;family=Inter:wght@400;500;600&amp;family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#3E5C76}a:hover{color:#2B4357}
+</style>
+</helmet>
+<div style="min-height: 860px; box-sizing: border-box; background-color: #F4EEE3; background-image: radial-gradient(rgba(59,55,50,0.05) 1px, transparent 1px); background-size: 5px 5px; color: #3B3732; font-family: Inter, system-ui, sans-serif; display: flex; align-items: center">
+  <main style="width: 100%; max-width: 1120px; margin: 0 auto; padding: 48px 32px; box-sizing: border-box; display: flex; flex-wrap: wrap; gap: 56px; align-items: center">
+
+    <div style="flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 18px">
+      <p style="margin: 0; font-family: Caveat, cursive; font-size: 84px; font-weight: 600; line-height: 1">Quartia</p>
+      <svg width="240" height="12" viewBox="0 0 240 12" aria-hidden="true"><path d="M3 8 C 60 3, 120 11, 237 5" stroke="{{tinta}}" stroke-width="2.5" fill="none" stroke-linecap="round"></path></svg>
+      <h1 style="margin: 8px 0 0; font-family: 'Source Serif 4', Georgia, serif; font-weight: 400; font-size: 34px; line-height: 1.25">Sube tus datos y entiende <span style="font-style: italic">cómo</span> salió cada resultado.</h1>
+      <p style="margin: 0; font-family: Caveat, cursive; font-size: 28px; color: #4F4942; line-height: 1.3">media, mediana, cuartiles, histogramas… paso a paso, como en tu cuaderno.</p>
+    </div>
+
+    <div style="flex: 1 1 380px; min-width: 0; max-width: 440px; filter: drop-shadow(0 4px 6px rgba(59,55,50,0.14))">
+      <form style="background: #FBF8F2; padding: 36px 36px 64px; clip-path: polygon(0% 0%, 100% 0%, 100% 95%, 96% 99%, 92% 95.5%, 87% 100%, 82% 96%, 77% 99%, 72% 95.5%, 67% 98.5%, 62% 96%, 56% 100%, 51% 96%, 46% 99%, 40% 95.5%, 35% 98.5%, 30% 96%, 24% 100%, 19% 96%, 14% 99%, 8% 95.5%, 4% 98.5%, 0% 96%); display: flex; flex-direction: column; gap: 18px">
+        <h2 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-weight: 600; font-size: 26px">Iniciar sesión</h2>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="l-correo" style="font-size: 14px; font-weight: 500">Correo</label>
+          <input id="l-correo" type="email" autocomplete="email" placeholder="tu@correo.com" style="min-height: 44px; box-sizing: border-box; padding: 0 14px; border-radius: 6px; border: 1px solid #BFB29C; background: #FFFDF9; color: #3B3732; font: 400 15px Inter, sans-serif">
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="l-clave" style="font-size: 14px; font-weight: 500">Contraseña</label>
+          <input id="l-clave" type="password" autocomplete="current-password" style="min-height: 44px; box-sizing: border-box; padding: 0 14px; border-radius: 6px; border: 1px solid #BFB29C; background: #FFFDF9; color: #3B3732; font: 400 15px Inter, sans-serif">
+        </div>
+        <button type="submit" style="min-height: 46px; margin-top: 6px; border-radius: 6px; border: 1px solid {{tinta}}; background: {{tinta}}; color: #FBF8F2; font: 500 16px Inter, sans-serif; cursor: pointer">Entrar</button>
+        <p style="margin: 0; font-size: 14px; color: #6B645A; text-align: center">¿Primera vez? <a href="#">Crea tu cuenta</a></p>
+      </form>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tinta":{"editor":"color","default":"#3E5C76","options":["#3E5C76","#5B4A6B","#4F6B4A","#7A4E2D"]},"$preview":{"width":1440,"height":860}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { tinta: this.props.tinta ?? '#3E5C76' };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import { env } from './config/env.js';
 import pool from './config/db.js';
 import { errorHandler } from './middlewares/errorHandler.js';
@@ -33,6 +34,17 @@ app.use('/api/calculos', calculoRoutes);
 app.use('/api/graficas', graficaRoutes);
 app.use('/api/analisis', analisisRoutes);
 app.use('/api', definicionRoutes); // /api/definiciones y /api/glosario
+
+// Frontend compilado (web/dist, se genera con `npm run build`). Va después de la
+// API para que nunca tape una ruta /api. Cualquier otra ruta GET devuelve
+// index.html y React decide qué página mostrar (así funciona recargar /datasets/3).
+// Sin build (desarrollo con Vite) simplemente no encuentra nada y sigue al 404.
+app.use(express.static(env.WEB_DIST, { index: false }));
+app.get(/^\/(?!api(\/|$))/, (req, res, next) => {
+  res.sendFile(path.join(env.WEB_DIST, 'index.html'), (err) => {
+    if (err) next(err.code === 'ENOENT' ? undefined : err);
+  });
+});
 
 app.use((req, res) => res.status(404).json({ error: `Ruta no encontrada: ${req.method} ${req.path}` }));
 app.use(errorHandler);

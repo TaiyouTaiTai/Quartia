@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Quartia — Cálculo con explicación</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&amp;family=Inter:wght@400;500;600&amp;family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#3E5C76}a:hover{color:#2B4357}
+</style>
+</helmet>
+<div style="min-height: 1180px; box-sizing: border-box; background-color: #F4EEE3; background-image: radial-gradient(rgba(59,55,50,0.05) 1px, transparent 1px); background-size: 5px 5px; color: #3B3732; font-family: Inter, system-ui, sans-serif">
+
+  <header style="border-bottom: 1px solid #D6CBB8; background: #FBF8F2">
+    <div style="max-width: 1280px; margin: 0 auto; padding: 14px 32px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px">
+      <a href="#" style="font-family: Caveat, cursive; font-size: 38px; font-weight: 600; line-height: 1; color: #3B3732; text-decoration: none">Quartia</a>
+      <nav aria-label="Principal" style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; font-size: 15px">
+        <a href="#" style="color: #3B3732; font-weight: 500; text-decoration: underline; text-decoration-color: {{tinta}}; text-underline-offset: 6px; text-decoration-thickness: 2px">Mis tablas</a>
+        <a href="#" style="color: #6B645A; text-decoration: none">Glosario</a>
+        <span style="width: 36px; height: 36px; border-radius: 50%; background: #E6DCCB; display: inline-flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px" aria-label="Tu cuenta">JM</span>
+      </nav>
+    </div>
+  </header>
+
+  <main style="max-width: 1280px; margin: 0 auto; padding: 32px; display: flex; flex-direction: column; gap: 28px">
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: 14px; color: #6B645A"><a href="#" style="color: #6B645A">Mis tablas</a> / Notas del parcial</p>
+      <h1 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-weight: 600; font-size: 36px">Notas del parcial</h1>
+      <p style="margin: 0; font-size: 15px; color: #6B645A">5 filas · 3 columnas · subido desde Excel</p>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start">
+
+      <section aria-label="Datos" style="flex: 1 1 380px; min-width: 0; background: #FBF8F2; border: 1px solid #D6CBB8; border-radius: 8px; overflow: hidden">
+        <div style="overflow-x: auto">
+          <table style="width: 100%; border-collapse: collapse; font-size: 15px; font-variant-numeric: tabular-nums">
+            <thead>
+              <tr style="background: #EFE7DA">
+                <th scope="col" style="text-align: right; padding: 12px 14px; color: #6B645A; font-weight: 500; width: 36px">#</th>
+                <th scope="col" style="text-align: left; padding: 12px 14px">Estudiante<br><span style="font-weight: 400; font-size: 12px; color: #6B645A">nominal</span></th>
+                <th scope="col" style="text-align: left; padding: 12px 14px">Carrera<br><span style="font-weight: 400; font-size: 12px; color: #6B645A">nominal</span></th>
+                <th scope="col" style="text-align: right; padding: 12px 14px; box-shadow: inset 0 -3px 0 {{tinta}}">Nota<br><span style="font-weight: 400; font-size: 12px; color: #6B645A">razón</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{filas}}" as="f" hint-placeholder-count="5">
+                <tr style="border-top: 1px solid #E6DCCB">
+                  <td style="text-align: right; padding: 11px 14px; color: #6B645A">{{f.n}}</td>
+                  <td style="padding: 11px 14px">{{f.estudiante}}</td>
+                  <td style="padding: 11px 14px">{{f.carrera}}</td>
+                  <td style="text-align: right; padding: 11px 14px"><span style="background: #F2E3A6; padding: 2px 8px; border-radius: 3px; font-weight: 500">{{f.nota}}</span></td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin: 0; padding: 12px 14px; border-top: 1px solid #E6DCCB; font-size: 13px; color: #6B645A">Resaltadas: las 5 celdas que se usaron en el cálculo.</p>
+      </section>
+
+      <section aria-label="Resultados" style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px">
+          <sc-for list="{{resultados}}" as="r" hint-placeholder-count="4">
+            <button type="button" style="text-align: left; min-height: 44px; padding: 14px 16px; border-radius: 8px; border: {{r.borde}}; background: #FBF8F2; color: #3B3732; display: flex; flex-direction: column; gap: 4px; cursor: pointer">
+              <span style="font-size: 13px; color: #6B645A">{{r.nombre}}</span>
+              <span style="font-family: 'Source Serif 4', Georgia, serif; font-size: 30px; font-weight: 600; font-variant-numeric: tabular-nums">{{r.valor}}</span>
+            </button>
+          </sc-for>
+        </div>
+
+        <div style="filter: drop-shadow(0 3px 5px rgba(59,55,50,0.14))">
+          <div style="background: #FBF8F2; padding: 28px 32px 56px; clip-path: polygon(0% 0%, 100% 0%, 100% 95%, 97% 99%, 94% 96%, 90% 100%, 86% 96.5%, 82% 99%, 78% 95.5%, 74% 98.5%, 70% 96%, 65% 100%, 61% 96.5%, 57% 99%, 52% 95.5%, 48% 98.5%, 44% 96%, 39% 100%, 35% 96.5%, 31% 99%, 26% 95.5%, 22% 98.5%, 18% 96%, 13% 100%, 9% 96.5%, 5% 99%, 0% 96%); display: flex; flex-direction: column; gap: 22px">
+            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px">
+              <h2 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-weight: 600; font-size: 26px">Media aritmética = 78</h2>
+              <span style="font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: #6B645A">Así salió</span>
+            </div>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 32px; align-items: center">
+              <p style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 30px; display: flex; align-items: center; gap: 12px" aria-label="x barra igual a la suma de x sub i entre n">
+                <span style="font-style: italic">x̄</span><span>=</span>
+                <span style="display: inline-flex; flex-direction: column; align-items: center; line-height: 1.15"><span style="padding: 0 6px">Σ <i>x</i><sub style="font-size: 16px">i</sub></span><span style="border-top: 1.5px solid #3B3732; padding: 2px 6px 0; align-self: stretch; text-align: center"><i>n</i></span></span>
+              </p>
+              <span style="font-family: Caveat, cursive; font-size: 30px; color: #6B645A" aria-hidden="true">→</span>
+              <p style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 30px; display: flex; align-items: center; gap: 12px; color: {{tinta}}">
+                <span style="display: inline-flex; flex-direction: column; align-items: center; line-height: 1.15"><span style="padding: 0 6px">390</span><span style="border-top: 1.5px solid {{tinta}}; padding: 2px 6px 0; align-self: stretch; text-align: center">5</span></span>
+                <span>=</span><span style="font-weight: 600">78</span>
+              </p>
+            </div>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 10px 24px; font-size: 14px; color: #6B645A">
+              <span><b style="color: #3B3732; font-family: 'Source Serif 4', Georgia, serif; font-style: italic; font-size: 16px">x̄</b> media de la muestra</span>
+              <span><b style="color: #3B3732; font-family: 'Source Serif 4', Georgia, serif; font-size: 16px">Σ <i>x</i><sub>i</sub></b> suma de todos los valores</span>
+              <span><b style="color: #3B3732; font-family: 'Source Serif 4', Georgia, serif; font-style: italic; font-size: 16px">n</b> cantidad de valores</span>
+            </div>
+
+            <ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; background-image: repeating-linear-gradient(transparent 0 39px, rgba(62,92,118,0.14) 39px 40px)">
+              <sc-for list="{{pasos}}" as="p" hint-placeholder-count="3">
+                <li style="font-family: Caveat, cursive; font-size: 28px; line-height: 40px">{{p.n}}. {{p.texto}}: {{p.expresion}} <span style="color: {{tinta}}; font-weight: 600">{{p.resultado}}</span></li>
+              </sc-for>
+            </ol>
+
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; font-size: 14px; line-height: 1.55">
+              <div style="background: #F4EEE3; border-radius: 6px; padding: 14px 16px">
+                <p style="margin: 0 0 4px; font-weight: 600">Cuándo usarla</p>
+                <p style="margin: 0; color: #4F4942">Para datos numéricos sin valores extremos: resume el “centro” de las notas.</p>
+              </div>
+              <div style="background: #F4EEE3; border-radius: 6px; padding: 14px 16px">
+                <p style="margin: 0 0 4px; font-weight: 600">Cuidado</p>
+                <p style="margin: 0; color: #4F4942">Un solo valor muy alto o muy bajo la arrastra. Compárala con la mediana (85).</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background: #FBF8F2; border: 1px solid #D6CBB8; border-radius: 8px; padding: 24px; display: flex; flex-direction: column; gap: 16px">
+          <h2 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-weight: 600; font-size: 22px">Histograma de Nota</h2>
+          <div style="display: flex; gap: 16px; align-items: stretch">
+            <div style="display: flex; flex-direction: column; justify-content: space-between; font-size: 12px; color: #6B645A; text-align: right; padding-bottom: 26px; font-variant-numeric: tabular-nums" aria-hidden="true"><span>3</span><span>2</span><span>1</span><span>0</span></div>
+            <div role="img" aria-label="Histograma: 1 nota entre 60 y 70, 1 entre 70 y 80, 3 entre 80 y 90" style="flex: 1; display: flex; flex-direction: column; gap: 8px">
+              <div style="height: 168px; display: flex; align-items: flex-end; border-bottom: 1.5px solid #3B3732; border-left: 1.5px solid #3B3732">
+                <sc-for list="{{clases}}" as="c" hint-placeholder-count="3">
+                  <div style="flex: 1; height: {{c.alto}}; background: {{tinta}}; opacity: 0.85; border-right: 1px solid #FBF8F2"></div>
+                </sc-for>
+              </div>
+              <div style="display: flex; font-size: 13px; color: #6B645A; font-variant-numeric: tabular-nums">
+                <sc-for list="{{clases}}" as="c" hint-placeholder-count="3">
+                  <span style="flex: 1; text-align: center">{{c.rango}}</span>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+          <p style="margin: 0; font-family: Caveat, cursive; font-size: 24px; color: #4F4942">Cada barra es un intervalo de notas; su altura dice cuántos estudiantes caen ahí.</p>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tinta":{"editor":"color","default":"#3E5C76","options":["#3E5C76","#5B4A6B","#4F6B4A","#7A4E2D"]},"$preview":{"width":1440,"height":1180}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const tinta = this.props.tinta ?? '#3E5C76';
+    const activo = '2px solid ' + tinta;
+    const normal = '1px solid #D6CBB8';
+    return {
+      tinta,
+      filas: [
+        { n: 1, estudiante: 'Ana', carrera: 'Ingeniería', nota: 70 },
+        { n: 2, estudiante: 'Luis', carrera: 'Medicina', nota: 85 },
+        { n: 3, estudiante: 'Marta', carrera: 'Derecho', nota: 90 },
+        { n: 4, estudiante: 'Jorge', carrera: 'Ingeniería', nota: 60 },
+        { n: 5, estudiante: 'Sofía', carrera: 'Arquitectura', nota: 85 }
+      ],
+      resultados: [
+        { nombre: 'Media', valor: '78', borde: activo },
+        { nombre: 'Mediana', valor: '85', borde: normal },
+        { nombre: 'Moda', valor: '85', borde: normal },
+        { nombre: 'Desv. estándar', valor: '12.55', borde: normal }
+      ],
+      pasos: [
+        { n: 1, texto: 'Suma todos los valores', expresion: '70 + 85 + 90 + 60 + 85 =', resultado: '390' },
+        { n: 2, texto: 'Cuenta cuántos valores hay', expresion: '', resultado: '5' },
+        { n: 3, texto: 'Divide la suma entre la cantidad', expresion: '390 / 5 =', resultado: '78' }
+      ],
+      clases: [
+        { rango: '60 – 70', alto: '33.3%' },
+        { rango: '70 – 80', alto: '33.3%' },
+        { rango: '80 – 90', alto: '100%' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

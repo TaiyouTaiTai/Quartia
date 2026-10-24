@@ -20,6 +20,18 @@ npm run dev                 # servidor con recarga automática
 npm test                    # pruebas (no necesitan MySQL)
 ```
 
+### Frontend (React, carpeta `web/`)
+
+```bash
+npm --prefix web install    # la primera vez
+npm run dev                 # terminal 1: API en :3000
+npm run dev:web             # terminal 2: app en http://localhost:5173 (pasa /api a :3000)
+```
+
+En producción, `npm run build` compila el frontend en `web/dist` y `npm start`
+sirve la app y la API juntas en el mismo puerto. El plan está en
+`docs/plan-frontend.md` y el diseño aprobado en `docs/diseno/`.
+
 `npm run seed` lee el catálogo desde `CATALOGO_PATH` (ver `.env.example`) o desde
 una ruta: `npm run seed -- ../../estadistica-visual/db/seed/catalogo.json`. Se puede
 correr las veces que quieras: actualiza en vez de duplicar.
