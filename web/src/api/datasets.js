@@ -19,3 +19,6 @@ export const borrar = (id) => pedir(`/datasets/${id}`, { metodo: 'DELETE' });
 // cambios: { nombre?, escala?, unidad?, decimales? }
 export const actualizarColumna = (id, columnaId, cambios) =>
   pedir(`/datasets/${id}/columnas/${columnaId}`, { metodo: 'PATCH', body: cambios });
+
+// Reemplaza todos los datos. El backend borra los análisis anteriores.
+export const reemplazar = (id, tabla) => pedir(`/datasets/${id}`, { metodo: 'PUT', body: tabla });

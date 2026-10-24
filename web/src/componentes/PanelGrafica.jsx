@@ -16,8 +16,8 @@ export const GRAFICAS = {
 };
 const CON_CLASES = ['histograma', 'poligono', 'ojiva'];
 
-// Formulario para generar una gráfica. alGraficar(grafica, columna)
-export default function PanelGrafica({ tabla, alGraficar }) {
+// Formulario para generar una gráfica. alGraficar({ analisis_id, grafica })
+export default function PanelGrafica({ tabla, analisisId, alGraficar }) {
   const idColumna = useId();
   const idColumnaB = useId();
   const numericas = tabla.columnas.filter(c => c.tipo_dato === 'numerico');
@@ -44,13 +44,14 @@ export default function PanelGrafica({ tabla, alGraficar }) {
         metodo: 'POST',
         body: {
           dataset_id: tabla.id,
+          analisis_id: analisisId ?? undefined, // se suma al análisis abierto
           tipo: tipoValido,
           columna_id: columna.id,
           ...(tipoValido === 'dispersion' && { columna_b_id: columnaB.id }),
           metodo_clases: metodo
         }
       });
-      alGraficar(r.grafica, columna);
+      alGraficar(r);
     });
   }
 

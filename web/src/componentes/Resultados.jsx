@@ -4,7 +4,8 @@ import { numero, plural } from '../textos.js';
 // Nombre con su parámetro: "Cuartil 3", "Percentil 90" (el catálogo los nombra en plural)
 const SINGULAR = { cuartil: 'Cuartil', decil: 'Decil', percentil: 'Percentil' };
 export const nombreResultado = (r) =>
-  (r.parametro != null ? `${SINGULAR[r.clave] ?? r.nombre} ${numero(r.parametro)}` : r.nombre);
+  (r.parametro != null ? `${SINGULAR[r.clave] ?? r.nombre} ${numero(r.parametro)}` : r.nombre)
+  + (r.valor_json?.distribucion ? ' (agrupada)' : '');
 
 // El valor tal como se muestra en la tarjeta
 export function valorResultado(r, decimales) {
@@ -18,7 +19,9 @@ export function valorResultado(r, decimales) {
 }
 
 // Tarjetas: una por resultado; la elegida muestra su explicación debajo
-export function TarjetasResultado({ resultados, elegido, alElegir, decimales }) {
+// decimalesDe(r): los decimales de la columna de ese resultado (un análisis puede
+// tener resultados de varias columnas)
+export function TarjetasResultado({ resultados, elegido, alElegir, decimalesDe }) {
   return (
     <div className="tarjetas-resultado">
       {resultados.map(r => (
@@ -27,7 +30,8 @@ export function TarjetasResultado({ resultados, elegido, alElegir, decimales }) 
           onClick={() => alElegir(r)}
         >
           <span className="tarjeta-resultado-nombre">{nombreResultado(r)}</span>
-          <span className="tarjeta-resultado-valor">{valorResultado(r, decimales)}</span>
+          <span className="tarjeta-resultado-valor">{valorResultado(r, decimalesDe(r))}</span>
+          <span className="tarjeta-resultado-columna">{r.datos_usados.columna}</span>
         </button>
       ))}
     </div>

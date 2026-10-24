@@ -64,3 +64,6 @@ export const PARAMETROS = {
   decil: { min: 1, max: 9, paso: 1, porDefecto: 5, etiqueta: 'Cuál decil' },
   percentil: { min: 1, max: 99, paso: 'any', porDefecto: 50, etiqueta: 'Cuál percentil' }
 };
+
+export const fechaHora = (iso) =>
+  new Date(iso).toLocaleString('es', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });

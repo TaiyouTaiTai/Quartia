@@ -20,6 +20,12 @@ function pegarBloque(matriz, r0, c0, bloque) {
   return nueva;
 }
 
+// Una tabla guardada → matriz de textos para el editor (con una fila vacía al final para seguir escribiendo)
+function aMatriz({ columnas, filas }) {
+  const texto = (v) => (v === null || v === undefined ? '' : String(v));
+  return [columnas.map(texto), ...filas.map(f => columnas.map((_, c) => texto(f[c]))), columnas.map(() => '')];
+}
+
 // Quita filas y columnas completamente vacías antes de enviar
 function limpiar(matriz) {
   const columnasUsadas = matriz[0].map((_, c) => matriz.some(f => f[c].trim() !== ''));
@@ -33,8 +39,23 @@ function limpiar(matriz) {
 
 export default function NuevaTabla() {
   const navegar = useNavigate();
-  const [titulo, setTitulo] = useState('');
-  const [matriz, setMatriz] = useState(() => vacia(6, 3));
+  return (
+    <EditorTabla
+      titulo="Crear tabla" textoBoton="Guardar tabla"
+      alGuardar={async (tabla) => {
+        const { id } = await datasets.crear(tabla);
+        navegar(`/tablas/${id}`, { state: { nueva: true } });
+      }}
+    />
+  );
+}
+
+// Cuadrícula editable, para crear una tabla o editar una existente.
+// inicial: { titulo, columnas, filas } · alGuardar({ titulo, columnas, filas }) → promesa
+// aviso: texto que se muestra junto al botón (ej. que se borrarán los análisis)
+export function EditorTabla({ titulo: tituloPagina, migas, inicial, aviso, textoBoton, cancelarA = '/', alGuardar }) {
+  const [titulo, setTitulo] = useState(inicial?.titulo ?? '');
+  const [matriz, setMatriz] = useState(() => (inicial ? aMatriz(inicial) : vacia(6, 3)));
   const { errores, mensaje, enviando, enviar, setMensaje } = useEnvio();
 
   const cambiar = (r, c) => (e) => {
@@ -64,10 +85,7 @@ export default function NuevaTabla() {
       setMensaje('La tabla está vacía: escribe los nombres de las columnas y al menos una fila de datos.');
       return;
     }
-    enviar(async () => {
-      const { id } = await datasets.crear({ titulo: titulo.trim() || undefined, columnas, filas });
-      navegar(`/tablas/${id}`, { state: { nueva: true } });
-    });
+    enviar(() => alGuardar({ titulo: titulo.trim() || undefined, columnas, filas }));
   }
 
   const [encabezados, ...filas] = matriz;
@@ -75,8 +93,8 @@ export default function NuevaTabla() {
 
   return (
     <main className="pagina">
-      <p className="migas"><Link to="/">Mis tablas</Link> / Nueva tabla</p>
-      <h1>Crear tabla</h1>
+      <p className="migas"><Link to="/">Mis tablas</Link> / {migas ?? 'Nueva tabla'}</p>
+      <h1>{tituloPagina}</h1>
       <p className="lapiz consejo">
         Consejo: copia celdas en Excel o Google Sheets y pégalas en cualquier casilla; la tabla crece sola.
       </p>
@@ -133,9 +151,10 @@ export default function NuevaTabla() {
         <Alerta>{mensaje || Object.entries(errores).find(([campo]) => campo !== 'titulo')?.[1]}</Alerta>
         <div className="editor-acciones">
           <button type="submit" className="boton boton-primario" disabled={enviando}>
-            {enviando ? 'Guardando…' : 'Guardar tabla'}
+            {enviando ? 'Guardando…' : textoBoton}
           </button>
-          <Link to="/" className="boton boton-enlace">Cancelar</Link>
+          <Link to={cancelarA} className="boton boton-enlace">Cancelar</Link>
+          {aviso && <span className="campo-ayuda">{aviso}</span>}
         </div>
       </form>
     </main>

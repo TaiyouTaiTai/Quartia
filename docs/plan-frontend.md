@@ -126,12 +126,12 @@ Se piden con `POST /api/graficas`; cada respuesta trae `config` con `titulo`,
 - [x] Opción `metodo_clases` para histograma/polígono/ojiva.
 
 ### Fase 5 — Historial de análisis
-- [ ] En el detalle del dataset: `GET /api/datasets/:id/analisis` (nombre, fecha,
+- [x] En el detalle del dataset: `GET /api/datasets/:id/analisis` (nombre, fecha,
       cuántos resultados y gráficas).
-- [ ] Página de análisis (`GET /api/analisis/:id`): resultados con hover + gráficas guardadas.
-- [ ] Agregar más cálculos/gráficas al mismo análisis (`analisis_id` en los POST).
-- [ ] Borrar análisis (`DELETE /api/analisis/:id`).
-- [ ] Aviso al reemplazar datos (`PUT /api/datasets/:id`): borra los análisis anteriores.
+- [x] Página de análisis (`GET /api/analisis/:id`): resultados con hover + gráficas guardadas.
+- [x] Agregar más cálculos/gráficas al mismo análisis (`analisis_id` en los POST).
+- [x] Borrar análisis (`DELETE /api/analisis/:id`).
+- [x] Aviso al reemplazar datos (`PUT /api/datasets/:id`): borra los análisis anteriores.
 
 ### Fase 6 — Pulido y despliegue
 - [ ] Estados de carga, vacío y error en cada página; diseño usable en celular.

@@ -15,8 +15,8 @@ function motivoNoPermitido(def, columna) {
   return `Necesita una columna numérica y "${columna.nombre}" no lo es.`;
 }
 
-// Formulario: columna, estadísticos y opciones. alCalcular(respuesta, columna)
-export default function PanelCalculo({ tabla, catalogo, alCalcular }) {
+// Formulario: columna, estadísticos y opciones. alCalcular(respuesta)
+export default function PanelCalculo({ tabla, catalogo, analisisId, alCalcular }) {
   const idColumna = useId();
   const columnaInicial = tabla.columnas.find(c => c.tipo_dato === 'numerico') ?? tabla.columnas[0];
   const [columnaId, setColumnaId] = useState(columnaInicial.id);
@@ -69,16 +69,17 @@ export default function PanelCalculo({ tabla, catalogo, alCalcular }) {
         const r = await calculos.calcular({
           dataset_id: tabla.id,
           columna_id: columna.id,
+          analisis_id: analisisId ?? undefined, // se suma al análisis abierto
           estadisticos,
           agrupado: numerica && agrupado,
           metodo_clases: metodo,
           poblacional
         });
-        alCalcular(r, columna);
+        alCalcular(r);
       } catch (err) {
         // Ninguno se pudo calcular: el backend explica el motivo de cada uno
         if (err instanceof ErrorApi && err.datos?.errores) {
-          alCalcular({ analisis: null, errores: err.datos.errores, avisos: [] }, columna);
+          alCalcular({ analisis: null, errores: err.datos.errores, avisos: [] });
           return;
         }
         throw err;
